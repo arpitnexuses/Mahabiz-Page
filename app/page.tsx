@@ -147,143 +147,141 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
-          <div className="space-y-8">
-            <div className="space-y-6">
-              <h1 className="text-6xl lg:text-7xl font-bold leading-tight text-white">
-                Mahabiz 2026 –
-                <br />
-                Contacts to
-                <br />
-                Contracts
-              </h1>
-              <p className="text-xl text-white/90 max-w-md">Networking that generates business</p>
-            </div>
+      {/* Hero Section with Video Background */}
+      <main className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Video Background */}
+        <div className="absolute inset-0 w-full h-full">
+          <video
+            src="/MAHABIZ ( previous year event highlight )- GMBF .mp4"
+            autoPlay
+            loop
+            muted={isVideoMuted}
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            Your browser does not support the video tag.
+          </video>
+          
+          {/* Dark overlay for better text readability */}
+          <div className="absolute inset-0 bg-black/40"></div>
+          
+          {/* Gradient overlay for better text contrast */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
+        </div>
 
-            {/* Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                style={{ color: "#3755A5" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#54A3DA"
-                  e.currentTarget.style.color = "white"
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "white"
-                  e.currentTarget.style.color = "#3755A5"
-                }}
-              >
-                Register Now
-              </Button>
-              <Button
-                className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                style={{ color: "#3755A5" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#54A3DA"
-                  e.currentTarget.style.color = "white"
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "white"
-                  e.currentTarget.style.color = "#3755A5"
-                }}
-              >
-                Become Sponsor
-              </Button>
-            </div>
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className="space-y-8">
+              <div className="space-y-6">
+                <h1 className="text-6xl lg:text-7xl font-bold leading-tight text-white drop-shadow-2xl">
+                  Mahabiz 2026 –
+                  <br />
+                  Contacts to
+                  <br />
+                  Contracts
+                </h1>
+                <p className="text-xl text-white/90 max-w-md drop-shadow-lg">Networking that generates business</p>
+              </div>
 
-            {/* Countdown Timer */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-8">
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-white">{timeLeft.days.toString().padStart(2, "0")}</div>
-                  <div className="text-white/70 text-sm uppercase tracking-wider">Days</div>
-                </div>
-                <div className="text-3xl font-light text-white">:</div>
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-white">{timeLeft.hours.toString().padStart(2, "0")}</div>
-                  <div className="text-white/70 text-sm uppercase tracking-wider">Hours</div>
-                </div>
-                <div className="text-3xl font-light text-white">:</div>
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-white">{timeLeft.minutes.toString().padStart(2, "0")}</div>
-                  <div className="text-white/70 text-sm uppercase tracking-wider">Minutes</div>
+              {/* Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                  style={{ color: "#3755A5" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#54A3DA"
+                    e.currentTarget.style.color = "white"
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "white"
+                    e.currentTarget.style.color = "#3755A5"
+                  }}
+                >
+                  Register Now
+                </Button>
+                <Button
+                  className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                  style={{ color: "#3755A5" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#54A3DA"
+                    e.currentTarget.style.color = "white"
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "white"
+                    e.currentTarget.style.color = "#3755A5"
+                  }}
+                >
+                  Become Sponsor
+                </Button>
+              </div>
+
+              {/* Countdown Timer */}
+              <div className="space-y-4">
+                <div className="flex items-center space-x-8">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-white drop-shadow-lg">{timeLeft.days.toString().padStart(2, "0")}</div>
+                    <div className="text-white/70 text-sm uppercase tracking-wider drop-shadow-md">Days</div>
+                  </div>
+                  <div className="text-3xl font-light text-white drop-shadow-lg">:</div>
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-white drop-shadow-lg">{timeLeft.hours.toString().padStart(2, "0")}</div>
+                    <div className="text-white/70 text-sm uppercase tracking-wider drop-shadow-md">Hours</div>
+                  </div>
+                  <div className="text-3xl font-light text-white drop-shadow-lg">:</div>
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-white drop-shadow-lg">{timeLeft.minutes.toString().padStart(2, "0")}</div>
+                    <div className="text-white/70 text-sm uppercase tracking-wider drop-shadow-md">Minutes</div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Right Content - Video */}
-          <div className="relative">
-            {/* Date Badge - Above Video */}
-            <div className="mb-4 flex justify-center">
-              <div className="bg-white rounded-lg px-4 py-2 shadow-lg">
+            {/* Right Content - Date Badge and Controls */}
+            <div className="relative flex flex-col items-center space-y-6">
+              {/* Date Badge */}
+              <div className="bg-white rounded-lg px-6 py-3 shadow-2xl">
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 rounded" style={{ backgroundColor: "#3755A5" }}></div>
                   <span className="font-semibold text-sm" style={{ color: "#3755A5" }}>
-                  31 Jan – 1 Feb, 2026 · Dubai
+                    31 Jan – 1 Feb, 2026 · Dubai
                   </span>
                 </div>
               </div>
-            </div>
 
-            {/* Main Video */}
-            <div 
-              className="relative rounded-2xl overflow-hidden shadow-2xl" 
-              style={{ width: '100%', height: '350px', border: '2px solid white' }}
-              onMouseEnter={() => setShowSpeakerButton(true)}
-              onMouseLeave={() => setShowSpeakerButton(false)}
-            >
-              <video
-                src="/MAHABIZ ( previous year event highlight )- GMBF .mp4"
-                autoPlay
-                loop
-                muted={isVideoMuted}
-                playsInline
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  objectPosition: 'center'
-                }}
+              {/* Video Controls */}
+              <div 
+                className="relative"
+                onMouseEnter={() => setShowSpeakerButton(true)}
+                onMouseLeave={() => setShowSpeakerButton(false)}
               >
-                Your browser does not support the video tag.
-              </video>
-              
-              {/* Unmute Button */}
-              {showSpeakerButton && (
-                <button
-                  onClick={() => setIsVideoMuted(!isVideoMuted)}
-                  className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 transition-all duration-300 backdrop-blur-sm"
-                  aria-label={isVideoMuted ? "Unmute video" : "Mute video"}
-                >
-                  {isVideoMuted ? (
-                    <VolumeX className="w-5 h-5" />
-                  ) : (
-                    <Volume2 className="w-5 h-5" />
-                  )}
-                </button>
-              )}
-              
-              {/* Decorative Pattern Overlay */}
+                {/* Unmute Button */}
+                {showSpeakerButton && (
+                  <button
+                    onClick={() => setIsVideoMuted(!isVideoMuted)}
+                    className="bg-black/50 hover:bg-black/70 text-white rounded-full p-4 transition-all duration-300 backdrop-blur-sm shadow-lg"
+                    aria-label={isVideoMuted ? "Unmute video" : "Mute video"}
+                  >
+                    {isVideoMuted ? (
+                      <VolumeX className="w-6 h-6" />
+                    ) : (
+                      <Volume2 className="w-6 h-6" />
+                    )}
+                  </button>
+                )}
+              </div>
+
+              {/* Decorative Elements */}
               <div
-                className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent"
-                style={{ background: `linear-gradient(to bottom right, rgba(11, 88, 140, 0.2), transparent)` }}
+                className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-xl"
+                style={{ backgroundColor: "rgba(11, 88, 140, 0.3)" }}
+              ></div>
+              <div
+                className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full blur-xl"
+                style={{ backgroundColor: "rgba(25, 159, 212, 0.3)" }}
               ></div>
             </div>
-
-            {/* Decorative Elements */}
-            <div
-              className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-xl"
-              style={{ backgroundColor: "rgba(11, 88, 140, 0.2)" }}
-            ></div>
-            <div
-              className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full blur-xl"
-              style={{ backgroundColor: "rgba(25, 159, 212, 0.2)" }}
-            ></div>
           </div>
         </div>
       </main>
