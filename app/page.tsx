@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { ChevronDown, ShoppingCart, User, Mic, Clock, Users, Calendar, Volume2, VolumeX } from "lucide-react"
+import { ChevronDown, ShoppingCart, User, Mic, Clock, Users, Calendar, Volume2, VolumeX, Play, Pause } from "lucide-react"
 
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -49,29 +49,59 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 
 export default function HomePage() {
   const [timeLeft, setTimeLeft] = useState({
-    days: 4,
-    hours: 3,
-    minutes: 5,
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
   })
   const [isVideoMuted, setIsVideoMuted] = useState(true)
   const [showSpeakerButton, setShowSpeakerButton] = useState(false)
+  const [isVideoPlaying, setIsVideoPlaying] = useState(true)
+  const [showPlayButton, setShowPlayButton] = useState(false)
+  const [promoVideoRef, setPromoVideoRef] = useState<HTMLVideoElement | null>(null)
 
   useEffect(() => {
+    const calculateTimeLeft = () => {
+      // Event date: January 31st, 2026 at 10:00 AM
+      const eventDate = new Date('2026-01-31T10:00:00')
+      const now = new Date()
+      const difference = eventDate.getTime() - now.getTime()
+
+      if (difference > 0) {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24))
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000)
+
+        return { days, hours, minutes, seconds }
+      } else {
+        // Event has passed
+        return { days: 0, hours: 0, minutes: 0, seconds: 0 }
+      }
+    }
+
+    // Set initial time
+    setTimeLeft(calculateTimeLeft())
+
+    // Update every second
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev.minutes > 0) {
-          return { ...prev, minutes: prev.minutes - 1 }
-        } else if (prev.hours > 0) {
-          return { ...prev, hours: prev.hours - 1, minutes: 59 }
-        } else if (prev.days > 0) {
-          return { ...prev, days: prev.days - 1, hours: 23, minutes: 59 }
-        }
-        return prev
-      })
-    }, 60000) // Update every minute
+      setTimeLeft(calculateTimeLeft())
+    }, 1000)
 
     return () => clearInterval(timer)
   }, [])
+
+  const handleVideoPlayPause = () => {
+    if (promoVideoRef) {
+      if (isVideoPlaying) {
+        promoVideoRef.pause()
+        setIsVideoPlaying(false)
+      } else {
+        promoVideoRef.play()
+        setIsVideoPlaying(true)
+      }
+    }
+  }
 
   return (
     <div className="min-h-screen">
@@ -171,300 +201,299 @@ export default function HomePage() {
 
         {/* Content */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left Content */}
-            <div className="space-y-8">
-              <div className="space-y-6">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left Content */}
+          <div className="space-y-8">
+            <div className="space-y-6">
                 <h1 className="text-6xl lg:text-7xl font-bold leading-tight text-white drop-shadow-2xl">
-                  Mahabiz 2026 –
-                  <br />
-                  Contacts to
-                  <br />
-                  Contracts
-                </h1>
+                Mahabiz 2026 –
+                <br />
+                Contacts to
+                <br />
+                Contracts
+              </h1>
                 <p className="text-xl text-white/90 max-w-md drop-shadow-lg">Networking that generates business</p>
-              </div>
+            </div>
 
-              {/* Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button
-                  className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                  style={{ color: "#3755A5" }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#54A3DA"
-                    e.currentTarget.style.color = "white"
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "white"
-                    e.currentTarget.style.color = "#3755A5"
-                  }}
-                >
-                  Register Now
-                </Button>
-                <Button
-                  className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                  style={{ color: "#3755A5" }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#54A3DA"
-                    e.currentTarget.style.color = "white"
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "white"
-                    e.currentTarget.style.color = "#3755A5"
-                  }}
-                >
-                  Become Sponsor
-                </Button>
-              </div>
+            {/* Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button
+                className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                style={{ color: "#3755A5" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#54A3DA"
+                  e.currentTarget.style.color = "white"
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "white"
+                  e.currentTarget.style.color = "#3755A5"
+                }}
+              >
+                Register Now
+              </Button>
+              <Button
+                className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                style={{ color: "#3755A5" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#54A3DA"
+                  e.currentTarget.style.color = "white"
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "white"
+                  e.currentTarget.style.color = "#3755A5"
+                }}
+              >
+                Become Sponsor
+              </Button>
+            </div>
 
-              {/* Countdown Timer */}
-              <div className="space-y-4">
-                <div className="flex items-center space-x-8">
+            {/* Countdown Timer */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-center space-x-4 sm:space-x-6">
                   <div className="text-center">
-                    <div className="text-4xl font-bold text-white drop-shadow-lg">{timeLeft.days.toString().padStart(2, "0")}</div>
-                    <div className="text-white/70 text-sm uppercase tracking-wider drop-shadow-md">Days</div>
+                    <div className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">{timeLeft.days.toString().padStart(2, "0")}</div>
+                    <div className="text-white/70 text-xs sm:text-sm uppercase tracking-wider drop-shadow-md">Days</div>
                   </div>
-                  <div className="text-3xl font-light text-white drop-shadow-lg">:</div>
+                  <div className="text-2xl sm:text-3xl font-light text-white drop-shadow-lg">:</div>
                   <div className="text-center">
-                    <div className="text-4xl font-bold text-white drop-shadow-lg">{timeLeft.hours.toString().padStart(2, "0")}</div>
-                    <div className="text-white/70 text-sm uppercase tracking-wider drop-shadow-md">Hours</div>
+                    <div className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">{timeLeft.hours.toString().padStart(2, "0")}</div>
+                    <div className="text-white/70 text-xs sm:text-sm uppercase tracking-wider drop-shadow-md">Hours</div>
                   </div>
-                  <div className="text-3xl font-light text-white drop-shadow-lg">:</div>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-white drop-shadow-lg">{timeLeft.minutes.toString().padStart(2, "0")}</div>
-                    <div className="text-white/70 text-sm uppercase tracking-wider drop-shadow-md">Minutes</div>
+                  <div className="text-2xl sm:text-3xl font-light text-white drop-shadow-lg">:</div>
+                <div className="text-center">
+                    <div className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">{timeLeft.minutes.toString().padStart(2, "0")}</div>
+                    <div className="text-white/70 text-xs sm:text-sm uppercase tracking-wider drop-shadow-md">Minutes</div>
+                </div>
+                  <div className="text-2xl sm:text-3xl font-light text-white drop-shadow-lg">:</div>
+                <div className="text-center">
+                    <div className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">{timeLeft.seconds.toString().padStart(2, "0")}</div>
+                    <div className="text-white/70 text-xs sm:text-sm uppercase tracking-wider drop-shadow-md">Seconds</div>
                   </div>
+                </div>
+                
+                {/* Event Date Display */}
+                <div className="text-center">
+                  <p className="text-white/80 text-sm sm:text-base drop-shadow-md">
+                    Event starts on <span className="font-semibold">January 31st, 2026 at 10:00 AM</span>
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Right Content - Date Badge and Controls */}
+            {/* Right Content - Video Controls */}
             <div className="relative flex flex-col items-center space-y-6">
-              {/* Date Badge */}
-              <div className="bg-white rounded-lg px-6 py-3 shadow-2xl">
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 rounded" style={{ backgroundColor: "#3755A5" }}></div>
-                  <span className="font-semibold text-sm" style={{ color: "#3755A5" }}>
-                    31 Jan – 1 Feb, 2026 · Dubai
-                  </span>
-                </div>
-              </div>
-
               {/* Video Controls */}
-              <div 
+            <div 
                 className="relative"
-                onMouseEnter={() => setShowSpeakerButton(true)}
-                onMouseLeave={() => setShowSpeakerButton(false)}
+              onMouseEnter={() => setShowSpeakerButton(true)}
+              onMouseLeave={() => setShowSpeakerButton(false)}
               >
-                {/* Unmute Button */}
-                {showSpeakerButton && (
-                  <button
-                    onClick={() => setIsVideoMuted(!isVideoMuted)}
+              {/* Unmute Button */}
+              {showSpeakerButton && (
+                <button
+                  onClick={() => setIsVideoMuted(!isVideoMuted)}
                     className="bg-black/50 hover:bg-black/70 text-white rounded-full p-4 transition-all duration-300 backdrop-blur-sm shadow-lg"
-                    aria-label={isVideoMuted ? "Unmute video" : "Mute video"}
-                  >
-                    {isVideoMuted ? (
+                  aria-label={isVideoMuted ? "Unmute video" : "Mute video"}
+                >
+                  {isVideoMuted ? (
                       <VolumeX className="w-6 h-6" />
-                    ) : (
+                  ) : (
                       <Volume2 className="w-6 h-6" />
-                    )}
-                  </button>
-                )}
-              </div>
+                  )}
+                </button>
+              )}
+            </div>
 
-              {/* Decorative Elements */}
-              <div
-                className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-xl"
+            {/* Decorative Elements */}
+            <div
+              className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-xl"
                 style={{ backgroundColor: "rgba(11, 88, 140, 0.3)" }}
-              ></div>
-              <div
-                className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full blur-xl"
+            ></div>
+            <div
+              className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full blur-xl"
                 style={{ backgroundColor: "rgba(25, 159, 212, 0.3)" }}
-              ></div>
+            ></div>
             </div>
           </div>
         </div>
       </main>
 
-      {/* Statistics and Welcome Section */}
-      <section className="bg-white py-16">
+      {/* About Section */}
+      <section className="bg-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div
-            className="grid lg:grid-cols-3 gap-0 max-w-5xl mx-auto rounded-lg overflow-hidden bg-white"
-            style={{ border: `1px solid #3755A5` }}
-          >
-            {/* Statistics Grid - Left Side (2 columns) */}
-            <div className="lg:col-span-2">
-              <div className="grid grid-cols-2 h-full">
-                {/* 20 SPEAKER */}
-                <div
-                  className="p-8 text-center bg-white transition-all duration-300 cursor-pointer"
-                  style={{ borderRight: `1px solid #3755A5`, borderBottom: `1px solid #3755A5` }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#54A3DA'
-                    const numberEl = e.currentTarget.querySelector('.speaker-number') as HTMLElement
-                    const labelEl = e.currentTarget.querySelector('.speaker-label') as HTMLElement
-                    if (numberEl) numberEl.style.color = 'white'
-                    if (labelEl) labelEl.style.color = 'white'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'white'
-                    const numberEl = e.currentTarget.querySelector('.speaker-number') as HTMLElement
-                    const labelEl = e.currentTarget.querySelector('.speaker-label') as HTMLElement
-                    if (numberEl) numberEl.style.color = '#3755A5'
-                    if (labelEl) labelEl.style.color = '#3755A5'
-                  }}
-                >
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
-                    style={{ backgroundColor: "#3755A5" }}
-                  >
-                    <Mic className="w-6 h-6" style={{ color: "white" }} />
-                  </div>
-                  <div className="text-2xl font-bold mb-1 speaker-number transition-colors duration-300" style={{ color: "#3755A5" }}>
-                    20
-                  </div>
-                  <div className="font-medium uppercase tracking-wide text-sm speaker-label transition-colors duration-300" style={{ color: "#3755A5" }}>
-                    SPEAKER
-                  </div>
-                </div>
+          {/* Header */}
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-6xl font-bold mb-6" style={{ color: "#3755A5" }}>
+              About Mahabiz 2026
+            </h2>
+            <div className="w-24 h-1 mx-auto rounded-full" style={{ backgroundColor: "#54A3DA" }}></div>
+          </div>
 
-                {/* 72 Hours */}
-                <div 
-                  className="p-8 text-center bg-white transition-all duration-300 cursor-pointer" 
-                  style={{ borderBottom: `1px solid #3755A5` }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#54A3DA'
-                    const numberEl = e.currentTarget.querySelector('.hours-number') as HTMLElement
-                    const labelEl = e.currentTarget.querySelector('.hours-label') as HTMLElement
-                    if (numberEl) numberEl.style.color = 'white'
-                    if (labelEl) labelEl.style.color = 'white'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'white'
-                    const numberEl = e.currentTarget.querySelector('.hours-number') as HTMLElement
-                    const labelEl = e.currentTarget.querySelector('.hours-label') as HTMLElement
-                    if (numberEl) numberEl.style.color = '#3755A5'
-                    if (labelEl) labelEl.style.color = '#3755A5'
-                  }}
-                >
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
-                    style={{ backgroundColor: "#3755A5" }}
-                  >
-                    <Clock className="w-6 h-6" style={{ color: "white" }} />
-                  </div>
-                  <div className="text-2xl font-bold mb-1 hours-number transition-colors duration-300" style={{ color: "#3755A5" }}>
-                    14
-                  </div>
-                  <div className="font-medium hours-label transition-colors duration-300" style={{ color: "#3755A5" }}>
-                    Hours
-                  </div>
-                </div>
+          {/* Main Content Grid */}
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
+            {/* Left Side - Story */}
+            <div className="space-y-8">
+              <div>
+                <h3 className="text-2xl lg:text-3xl font-bold mb-4" style={{ color: "#3755A5" }}>
+                  The Story Behind Mahabiz
+                </h3>
+                <p className="text-lg text-gray-700 leading-relaxed mb-6">
+                  Think of Mahabiz as the ultimate business matchmaker. It's where entrepreneurs from India meet business leaders from the Gulf, and together they create amazing opportunities.
+                </p>
+                <p className="text-lg text-gray-700 leading-relaxed">
+                  Started by <span className="font-semibold" style={{ color: "#3755A5" }}>GMBF Global</span>, Mahabiz has one simple goal: <span className="font-semibold" style={{ color: "#54A3DA" }}>turn handshakes into deals.</span>
+                </p>
+              </div>
 
-                {/* 10 Workshop */}
-                <div 
-                  className="p-8 text-center bg-white transition-all duration-300 cursor-pointer" 
-                  style={{ borderRight: `1px solid #3755A5` }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#54A3DA'
-                    const numberEl = e.currentTarget.querySelector('.workshop-number') as HTMLElement
-                    const labelEl = e.currentTarget.querySelector('.workshop-label') as HTMLElement
-                    if (numberEl) numberEl.style.color = 'white'
-                    if (labelEl) labelEl.style.color = 'white'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'white'
-                    const numberEl = e.currentTarget.querySelector('.workshop-number') as HTMLElement
-                    const labelEl = e.currentTarget.querySelector('.workshop-label') as HTMLElement
-                    if (numberEl) numberEl.style.color = '#3755A5'
-                    if (labelEl) labelEl.style.color = '#3755A5'
-                  }}
-                >
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
-                    style={{ backgroundColor: "#3755A5" }}
-                  >
-                    <Users className="w-6 h-6" style={{ color: "white" }} />
+              {/* What Makes Us Special */}
+              <div className="bg-gray-50 p-8 rounded-2xl">
+                <h4 className="text-xl font-bold mb-6" style={{ color: "#3755A5" }}>
+                  What Makes Us Special?
+                </h4>
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 rounded-full mt-3 flex-shrink-0" style={{ backgroundColor: "#54A3DA" }}></div>
+                    <div>
+                      <span className="font-semibold" style={{ color: "#3755A5" }}>Global Reach:</span>
+                      <span className="text-gray-700"> We bring together 800+ business minds from 15+ countries</span>
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold mb-1 workshop-number transition-colors duration-300" style={{ color: "#3755A5" }}>
-                    10
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 rounded-full mt-3 flex-shrink-0" style={{ backgroundColor: "#54A3DA" }}></div>
+                    <div>
+                      <span className="font-semibold" style={{ color: "#3755A5" }}>Real Results:</span>
+                      <span className="text-gray-700"> Past events have created lasting partnerships and million-dollar deals</span>
+                    </div>
                   </div>
-                  <div className="font-medium workshop-label transition-colors duration-300" style={{ color: "#3755A5" }}>
-                    Workshop
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 rounded-full mt-3 flex-shrink-0" style={{ backgroundColor: "#54A3DA" }}></div>
+                    <div>
+                      <span className="font-semibold" style={{ color: "#3755A5" }}>Smart Focus:</span>
+                      <span className="text-gray-700"> We connect the right people at the right time</span>
+                    </div>
                   </div>
-                </div>
-
-                {/* 08 Days */}
-                <div 
-                  className="p-8 text-center bg-white transition-all duration-300 cursor-pointer"
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#54A3DA'
-                    const numberEl = e.currentTarget.querySelector('.days-number') as HTMLElement
-                    const labelEl = e.currentTarget.querySelector('.days-label') as HTMLElement
-                    if (numberEl) numberEl.style.color = 'white'
-                    if (labelEl) labelEl.style.color = 'white'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'white'
-                    const numberEl = e.currentTarget.querySelector('.days-number') as HTMLElement
-                    const labelEl = e.currentTarget.querySelector('.days-label') as HTMLElement
-                    if (numberEl) numberEl.style.color = '#3755A5'
-                    if (labelEl) labelEl.style.color = '#3755A5'
-                  }}
-                >
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
-                    style={{ backgroundColor: "#3755A5" }}
-                  >
-                    <Calendar className="w-6 h-6" style={{ color: "white" }} />
-                  </div>
-                  <div className="text-2xl font-bold mb-1 days-number transition-colors duration-300" style={{ color: "#3755A5" }}>
-                    02
-                  </div>
-                  <div className="font-medium days-label transition-colors duration-300" style={{ color: "#3755A5" }}>
-                    Days
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 rounded-full mt-3 flex-shrink-0" style={{ backgroundColor: "#54A3DA" }}></div>
+                    <div>
+                      <span className="font-semibold" style={{ color: "#3755A5" }}>Perfect Location:</span>
+                      <span className="text-gray-700"> Dubai - the world's business crossroads</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Welcome Section - Right Side */}
-            <div className="lg:col-span-1 flex flex-col h-full">
-              <div className="flex-1 flex flex-col h-full transition-all duration-300 hover:bg-opacity-90 cursor-pointer" style={{ backgroundColor: "#3755A5" }}>
-                {/* Dark blue section */}
-                <div className="p-8 text-white flex-1 flex items-center justify-center">
-                  <h3 className="text-xl font-bold leading-tight text-center">
-                  Welcome to Mahabiz 2026
-                  </h3>
-                </div>
-
-                {/* Yellow section */}
-                <div className="p-8 transition-all duration-300 hover:bg-opacity-90 cursor-pointer" style={{ backgroundColor: "#3755A5" }}>
-                  <p className="text-sm leading-relaxed mb-6 text-white">
-                  the premier platform where global business meets innovation, collaboration, and growth. 
-                  Join us to unlock endless possibilities and transformative partnerships.
-                  </p>
-                  <Button
-                    className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg flex items-center space-x-1"
-                    style={{ color: "#3755A5" }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = "#54A3DA"
-                      e.currentTarget.style.color = "white"
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = "white"
-                      e.currentTarget.style.color = "#3755A5"
-                    }}
-                  >
-                    <span>Learn More</span>
-                    <span>→</span>
-                  </Button>
-                </div>
+            {/* Right Side - Event Details */}
+            <div className="space-y-8">
+              {/* Mahabiz 2026 Event */}
+              <div className="bg-gradient-to-br p-8 rounded-2xl text-white" style={{ background: `linear-gradient(135deg, #3755A5, #54A3DA)` }}>
+                <h3 className="text-2xl lg:text-3xl font-bold mb-4">
+                  Mahabiz 2026: Our Biggest Event Yet
+                </h3>
+                <p className="text-lg mb-6 opacity-90">
+                  This isn't just another conference. It's two days of pure business magic happening <span className="font-semibold">January 31 - February 1, 2026.</span>
+                </p>
+                
+                <h4 className="text-xl font-bold mb-4">What to Expect:</h4>
+                <ul className="space-y-3">
+                  <li className="flex items-start space-x-3">
+                    <div className="w-2 h-2 rounded-full mt-3 flex-shrink-0 bg-white"></div>
+                    <span>Meet government ministers and industry giants</span>
+                  </li>
+                  <li className="flex items-start space-x-3">
+                    <div className="w-2 h-2 rounded-full mt-3 flex-shrink-0 bg-white"></div>
+                    <span>Discover investment opportunities worth millions</span>
+                  </li>
+                  <li className="flex items-start space-x-3">
+                    <div className="w-2 h-2 rounded-full mt-3 flex-shrink-0 bg-white"></div>
+                    <span>Network with successful entrepreneurs who've "been there, done that"</span>
+                  </li>
+                  <li className="flex items-start space-x-3">
+                    <div className="w-2 h-2 rounded-full mt-3 flex-shrink-0 bg-white"></div>
+                    <span>Learn about exports, imports, sustainability, and future trends</span>
+                  </li>
+                </ul>
               </div>
+
+              {/* Why Dubai */}
+              <div className="bg-white border-2 p-8 rounded-2xl" style={{ borderColor: "#3755A5" }}>
+                <h4 className="text-xl font-bold mb-4" style={{ color: "#3755A5" }}>
+                  Why Dubai? Why Now?
+                </h4>
+                <p className="text-gray-700 leading-relaxed">
+                  With India and UAE becoming stronger business partners than ever, there's never been a better time to connect these two dynamic markets. Dubai is the perfect meeting point where East meets West, and deals get done.
+                </p>
+              </div>
+
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Our Promise Section - Centered */}
+      <section className="py-20" style={{ backgroundColor: "#F8FAFC" }}>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h3 className="text-4xl lg:text-5xl font-bold mb-8" style={{ color: "#3755A5" }}>
+              Our Promise
+            </h3>
+            <p className="text-xl text-gray-700 leading-relaxed mb-10 max-w-3xl mx-auto">
+              We don't just host events. We create connections that change businesses and lives. When you leave Mahabiz 2026, you'll have new partners, fresh ideas, and real opportunities to grow.
+            </p>
+            <h4 className="text-2xl font-semibold" style={{ color: "#54A3DA" }}>
+              Ready to turn your next conversation into your next contract?
+            </h4>
+          </div>
+        </div>
+      </section>
+
+      {/* Video Section */}
+      <section 
+        className="relative min-h-screen flex items-center justify-center overflow-hidden"
+        onMouseEnter={() => setShowPlayButton(true)}
+        onMouseLeave={() => setShowPlayButton(false)}
+      >
+        {/* Video Background */}
+        <div className="absolute inset-0 w-full h-full">
+          <video
+            ref={(video) => {
+              if (video) {
+                setPromoVideoRef(video)
+                video.addEventListener('play', () => setIsVideoPlaying(true))
+                video.addEventListener('pause', () => setIsVideoPlaying(false))
+              }
+            }}
+            src="/Final MAHABIZ PROMO 1 - GMBF (2).mp4"
+            autoPlay
+            loop
+            muted={isVideoMuted}
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            Your browser does not support the video tag.
+          </video>
+          
+          {/* Dark overlay for better content readability */}
+          <div className="absolute inset-0 bg-black/40"></div>
+          
+          {/* Gradient overlay for better text contrast */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
+        </div>
+
+        {/* Play/Pause Button */}
+        {showPlayButton && (
+          <button
+            onClick={handleVideoPlayPause}
+            className="relative z-20 bg-black/70 hover:bg-black/80 text-white rounded-full p-6 transition-all duration-300 backdrop-blur-sm shadow-2xl hover:scale-110"
+            aria-label={isVideoPlaying ? "Pause video" : "Play video"}
+          >
+            {isVideoPlaying ? (
+              <Pause className="w-8 h-8" />
+            ) : (
+              <Play className="w-8 h-8 ml-1" />
+            )}
+          </button>
+        )}
       </section>
 
 
