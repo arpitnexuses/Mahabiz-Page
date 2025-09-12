@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { ChevronDown, ShoppingCart, User, Mic, Clock, Users, Calendar } from "lucide-react"
+import { ChevronDown, ShoppingCart, User, Mic, Clock, Users, Calendar, Volume2, VolumeX } from "lucide-react"
 
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -53,6 +53,8 @@ export default function HomePage() {
     hours: 3,
     minutes: 5,
   })
+  const [isVideoMuted, setIsVideoMuted] = useState(true)
+  const [showSpeakerButton, setShowSpeakerButton] = useState(false)
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -116,8 +118,8 @@ export default function HomePage() {
                 className="font-semibold px-6 transition-all duration-300 hover:scale-105 hover:shadow-lg"
                 style={{ backgroundColor: "#3755A5", color: "white" }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "white"
-                  e.currentTarget.style.color = "#3755A5"
+                  e.currentTarget.style.backgroundColor = "#54A3DA"
+                  e.currentTarget.style.color = "white"
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = "#3755A5"
@@ -167,7 +169,7 @@ export default function HomePage() {
                 className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
                 style={{ color: "#3755A5" }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#3755A5"
+                  e.currentTarget.style.backgroundColor = "#54A3DA"
                   e.currentTarget.style.color = "white"
                 }}
                 onMouseLeave={(e) => {
@@ -181,7 +183,7 @@ export default function HomePage() {
                 className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
                 style={{ color: "#3755A5" }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#3755A5"
+                  e.currentTarget.style.backgroundColor = "#54A3DA"
                   e.currentTarget.style.color = "white"
                 }}
                 onMouseLeave={(e) => {
@@ -214,25 +216,58 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Right Content - Image */}
+          {/* Right Content - Video */}
           <div className="relative">
-            {/* Date Badge */}
-            <div className="absolute top-4 left-4 z-10 bg-white rounded-lg px-4 py-2 shadow-lg">
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 rounded" style={{ backgroundColor: "#3755A5" }}></div>
-                <span className="font-semibold text-sm" style={{ color: "#3755A5" }}>
-                31 Jan – 1 Feb, 2026 · Dubai
-                </span>
+            {/* Date Badge - Above Video */}
+            <div className="mb-4 flex justify-center">
+              <div className="bg-white rounded-lg px-4 py-2 shadow-lg">
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 rounded" style={{ backgroundColor: "#3755A5" }}></div>
+                  <span className="font-semibold text-sm" style={{ color: "#3755A5" }}>
+                  31 Jan – 1 Feb, 2026 · Dubai
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Main Image */}
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-              <img
-                src="/image (5).png"
-                alt="GMBF Global Business Convention - Mahabiz Dubai 2024"
-                className="w-full h-[500px] object-cover"
-              />
+            {/* Main Video */}
+            <div 
+              className="relative rounded-2xl overflow-hidden shadow-2xl" 
+              style={{ width: '100%', height: '350px', border: '2px solid white' }}
+              onMouseEnter={() => setShowSpeakerButton(true)}
+              onMouseLeave={() => setShowSpeakerButton(false)}
+            >
+              <video
+                src="/Final MAHABIZ PROMO 1 - GMBF (2).mp4"
+                autoPlay
+                loop
+                muted={isVideoMuted}
+                playsInline
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  objectPosition: 'center'
+                }}
+              >
+                Your browser does not support the video tag.
+              </video>
+              
+              {/* Unmute Button */}
+              {showSpeakerButton && (
+                <button
+                  onClick={() => setIsVideoMuted(!isVideoMuted)}
+                  className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 transition-all duration-300 backdrop-blur-sm"
+                  aria-label={isVideoMuted ? "Unmute video" : "Mute video"}
+                >
+                  {isVideoMuted ? (
+                    <VolumeX className="w-5 h-5" />
+                  ) : (
+                    <Volume2 className="w-5 h-5" />
+                  )}
+                </button>
+              )}
+              
               {/* Decorative Pattern Overlay */}
               <div
                 className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent"
@@ -265,15 +300,17 @@ export default function HomePage() {
               <div className="grid grid-cols-2 h-full">
                 {/* 20 SPEAKER */}
                 <div
-                  className="p-8 text-center bg-white transition-all duration-300 hover:bg-gray-800 hover:scale-105 cursor-pointer"
+                  className="p-8 text-center bg-white transition-all duration-300 cursor-pointer"
                   style={{ borderRight: `1px solid #3755A5`, borderBottom: `1px solid #3755A5` }}
                   onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#54A3DA'
                     const numberEl = e.currentTarget.querySelector('.speaker-number') as HTMLElement
                     const labelEl = e.currentTarget.querySelector('.speaker-label') as HTMLElement
                     if (numberEl) numberEl.style.color = 'white'
                     if (labelEl) labelEl.style.color = 'white'
                   }}
                   onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'white'
                     const numberEl = e.currentTarget.querySelector('.speaker-number') as HTMLElement
                     const labelEl = e.currentTarget.querySelector('.speaker-label') as HTMLElement
                     if (numberEl) numberEl.style.color = '#3755A5'
@@ -296,15 +333,17 @@ export default function HomePage() {
 
                 {/* 72 Hours */}
                 <div 
-                  className="p-8 text-center bg-white transition-all duration-300 hover:bg-gray-800 hover:scale-105 cursor-pointer" 
+                  className="p-8 text-center bg-white transition-all duration-300 cursor-pointer" 
                   style={{ borderBottom: `1px solid #3755A5` }}
                   onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#54A3DA'
                     const numberEl = e.currentTarget.querySelector('.hours-number') as HTMLElement
                     const labelEl = e.currentTarget.querySelector('.hours-label') as HTMLElement
                     if (numberEl) numberEl.style.color = 'white'
                     if (labelEl) labelEl.style.color = 'white'
                   }}
                   onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'white'
                     const numberEl = e.currentTarget.querySelector('.hours-number') as HTMLElement
                     const labelEl = e.currentTarget.querySelector('.hours-label') as HTMLElement
                     if (numberEl) numberEl.style.color = '#3755A5'
@@ -327,15 +366,17 @@ export default function HomePage() {
 
                 {/* 10 Workshop */}
                 <div 
-                  className="p-8 text-center bg-white transition-all duration-300 hover:bg-gray-800 hover:scale-105 cursor-pointer" 
+                  className="p-8 text-center bg-white transition-all duration-300 cursor-pointer" 
                   style={{ borderRight: `1px solid #3755A5` }}
                   onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#54A3DA'
                     const numberEl = e.currentTarget.querySelector('.workshop-number') as HTMLElement
                     const labelEl = e.currentTarget.querySelector('.workshop-label') as HTMLElement
                     if (numberEl) numberEl.style.color = 'white'
                     if (labelEl) labelEl.style.color = 'white'
                   }}
                   onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'white'
                     const numberEl = e.currentTarget.querySelector('.workshop-number') as HTMLElement
                     const labelEl = e.currentTarget.querySelector('.workshop-label') as HTMLElement
                     if (numberEl) numberEl.style.color = '#3755A5'
@@ -358,14 +399,16 @@ export default function HomePage() {
 
                 {/* 08 Days */}
                 <div 
-                  className="p-8 text-center bg-white transition-all duration-300 hover:bg-gray-800 hover:scale-105 cursor-pointer"
+                  className="p-8 text-center bg-white transition-all duration-300 cursor-pointer"
                   onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#54A3DA'
                     const numberEl = e.currentTarget.querySelector('.days-number') as HTMLElement
                     const labelEl = e.currentTarget.querySelector('.days-label') as HTMLElement
                     if (numberEl) numberEl.style.color = 'white'
                     if (labelEl) labelEl.style.color = 'white'
                   }}
                   onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'white'
                     const numberEl = e.currentTarget.querySelector('.days-number') as HTMLElement
                     const labelEl = e.currentTarget.querySelector('.days-label') as HTMLElement
                     if (numberEl) numberEl.style.color = '#3755A5'
@@ -405,8 +448,16 @@ export default function HomePage() {
                   Join us to unlock endless possibilities and transformative partnerships.
                   </p>
                   <Button
-                    className="self-start font-semibold px-6 py-2 rounded-full text-sm flex items-center space-x-1 hover:bg-gray-800 hover:scale-105 hover:shadow-lg transition-all duration-300 whitespace-nowrap"
-                    style={{ backgroundColor: "#3755A5", color: "white" }}
+                    className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg flex items-center space-x-1"
+                    style={{ color: "#3755A5" }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#54A3DA"
+                      e.currentTarget.style.color = "white"
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "white"
+                      e.currentTarget.style.color = "#3755A5"
+                    }}
                   >
                     <span>Learn More</span>
                     <span>→</span>
@@ -566,8 +617,8 @@ export default function HomePage() {
                   className="w-full font-semibold px-6 py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg"
                   style={{ backgroundColor: "#3755A5", color: "white" }}
               onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "white"
-                    e.currentTarget.style.color = "#3755A5"
+                    e.currentTarget.style.backgroundColor = "#54A3DA"
+                    e.currentTarget.style.color = "white"
               }}
               onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = "#3755A5"
