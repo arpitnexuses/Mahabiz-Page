@@ -19,10 +19,18 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
           {question}
         </span>
         <div
-          className={`w-8 h-8 rounded-full flex items-center justify-center transition-transform ${isOpen ? "rotate-45" : ""}`}
+          className={`w-8 h-8 rounded-full relative flex items-center justify-center transition-transform ${isOpen ? "rotate-45" : ""}`}
           style={{ backgroundColor: "#3755A5" }}
         >
-          <span className="text-xl font-light" style={{ color: "white" }}>
+          <span 
+            className="absolute inset-0 flex items-center justify-center text-xl font-light" 
+            style={{ 
+              color: "white", 
+              lineHeight: "1",
+              fontSize: "20px",
+              transform: "translate(0, -1px)"
+            }}
+          >
             +
           </span>
         </div>
@@ -423,7 +431,7 @@ export default function HomePage() {
               <br />
               Asked Question
             </h2>
-          </div>
+            </div>
 
           {/* FAQ Items */}
           <div className="space-y-4">
@@ -472,8 +480,8 @@ export default function HomePage() {
               <div className="flex justify-end mb-6">
                 <div className="text-2xl font-bold" style={{ color: "#3755A5" }}>
                   
-                </div>
               </div>
+            </div>
 
               {/* Registration Form */}
               <form className="space-y-6">
@@ -488,7 +496,7 @@ export default function HomePage() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
                     placeholder="Enter your full name"
                   />
-                </div>
+            </div>
 
                 {/* Email Address */}
                 <div>
@@ -507,7 +515,7 @@ export default function HomePage() {
                 {/* I'm interested in */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    I'm interested in <span className="text-red-500">*</span>
+                    I&apos;m interested in <span className="text-red-500">*</span>
                   </label>
                   <select
                     required
@@ -520,12 +528,12 @@ export default function HomePage() {
                     <option value="market-insights">Market Insights</option>
                     <option value="partnership-opportunities">Partnership Opportunities</option>
                   </select>
-                </div>
+              </div>
 
                 {/* Event(s) I'm interested in */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Event(s) I'm interested in <span className="text-red-500">*</span>
+                    Event(s) I&apos;m interested in <span className="text-red-500">*</span>
                   </label>
                   <select
                     required
@@ -538,7 +546,7 @@ export default function HomePage() {
                     <option value="workshop-sessions">Workshop Sessions</option>
                     <option value="all-events">All Events</option>
                   </select>
-                </div>
+              </div>
 
                 {/* Message */}
                 <div>
@@ -550,24 +558,24 @@ export default function HomePage() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 resize-none"
                     placeholder="Tell us more about your interests or any questions you have..."
                   ></textarea>
-                </div>
+                  </div>
 
                 {/* Submit Button */}
-                <Button
+            <Button
                   type="submit"
                   className="w-full font-semibold px-6 py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg"
                   style={{ backgroundColor: "#3755A5", color: "white" }}
-                  onMouseEnter={(e) => {
+              onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = "white"
                     e.currentTarget.style.color = "#3755A5"
-                  }}
-                  onMouseLeave={(e) => {
+              }}
+              onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = "#3755A5"
-                    e.currentTarget.style.color = "white"
-                  }}
-                >
+                e.currentTarget.style.color = "white"
+              }}
+            >
                   Submit
-                </Button>
+            </Button>
               </form>
             </div>
           </div>
