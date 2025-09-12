@@ -238,7 +238,7 @@ export default function HomePage() {
               onMouseLeave={() => setShowSpeakerButton(false)}
             >
               <video
-                src="/Final MAHABIZ PROMO 1 - GMBF (2).mp4"
+                src="/MAHABIZ ( previous year event highlight )- GMBF .mp4"
                 autoPlay
                 loop
                 muted={isVideoMuted}
