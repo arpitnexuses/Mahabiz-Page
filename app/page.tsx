@@ -59,6 +59,10 @@ export default function HomePage() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(true)
   const [showPlayButton, setShowPlayButton] = useState(false)
   const [promoVideoRef, setPromoVideoRef] = useState<HTMLVideoElement | null>(null)
+  const [isPromoVideoMuted, setIsPromoVideoMuted] = useState(true)
+  const [showPromoSpeakerButton, setShowPromoSpeakerButton] = useState(false)
+  const [videoScale, setVideoScale] = useState(1)
+  const [videoOpacity, setVideoOpacity] = useState(1)
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -89,6 +93,32 @@ export default function HomePage() {
     }, 1000)
 
     return () => clearInterval(timer)
+  }, [])
+
+  // Scroll effect for video animation
+  useEffect(() => {
+    const handleScroll = () => {
+      const videoSection = document.getElementById('promo-video-section')
+      if (!videoSection) return
+
+      const rect = videoSection.getBoundingClientRect()
+      const windowHeight = window.innerHeight
+      
+      // Calculate scroll progress
+      const scrollProgress = Math.max(0, Math.min(1, (windowHeight - rect.top) / windowHeight))
+      
+      // Scale effect: shrink when scrolling up, extend when scrolling down
+      const scale = 0.7 + (scrollProgress * 0.3) // Scale from 0.7 to 1.0
+      const opacity = 0.6 + (scrollProgress * 0.4) // Opacity from 0.6 to 1.0
+      
+      setVideoScale(scale)
+      setVideoOpacity(opacity)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    handleScroll() // Initial call
+
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   const handleVideoPlayPause = () => {
@@ -127,24 +157,62 @@ export default function HomePage() {
                 <span>Home</span>
                 <ChevronDown className="w-4 h-4" />
               </div>
-              <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: "#3755A5" }}>
-                Agenda
+              <a 
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  const aboutSection = document.getElementById('about-section')
+                  if (aboutSection) {
+                    aboutSection.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }}
+                className="hover:opacity-80 transition-opacity" 
+                style={{ color: "#3755A5" }}
+              >
+                About Us
               </a>
-              <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: "#3755A5" }}>
-                Speakers
+              <a 
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  const faqSection = document.getElementById('faq-section')
+                  if (faqSection) {
+                    faqSection.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }}
+                className="hover:opacity-80 transition-opacity" 
+                style={{ color: "#3755A5" }}
+              >
+                FAQ's
               </a>
               <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: "#3755A5" }}>
                 Blog
               </a>
-              <div className="flex items-center space-x-1 cursor-pointer hover:opacity-80 transition-opacity" style={{ color: "#3755A5" }}>
-                <span>Pages</span>
-                <ChevronDown className="w-4 h-4" />
-              </div>
+              <a 
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  const footerSection = document.getElementById('footer-section')
+                  if (footerSection) {
+                    footerSection.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }}
+                className="hover:opacity-80 transition-opacity" 
+                style={{ color: "#3755A5" }}
+              >
+                Contact Us
+              </a>
             </nav>
 
             {/* Right side buttons */}
             <div className="flex items-center space-x-4">
               <Button 
+                onClick={() => {
+                  const formSection = document.getElementById('registration-form-section')
+                  if (formSection) {
+                    formSection.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }}
                 className="font-semibold px-6 transition-all duration-300 hover:scale-105 hover:shadow-lg"
                 style={{ backgroundColor: "#3755A5", color: "white" }}
                 onMouseEnter={(e) => {
@@ -162,15 +230,6 @@ export default function HomePage() {
                 <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-lg hover:bg-blue-50">
                   <User className="w-5 h-5 transition-colors duration-300" style={{ color: "#3755A5" }} />
                 </div>
-                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center cursor-pointer relative transition-all duration-300 hover:scale-110 hover:shadow-lg hover:bg-blue-50">
-                  <ShoppingCart className="w-5 h-5 transition-colors duration-300" style={{ color: "#3755A5" }} />
-                  <span
-                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs flex items-center justify-center font-semibold transition-all duration-300"
-                    style={{ backgroundColor: "#3755A5", color: "#3755A5" }}
-                  >
-                    2
-                  </span>
-                </div>
               </div>
             </div>
           </div>
@@ -178,7 +237,11 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section with Video Background */}
-      <main className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <main 
+        className="relative min-h-screen flex items-center justify-center overflow-hidden"
+        onMouseEnter={() => setShowSpeakerButton(true)}
+        onMouseLeave={() => setShowSpeakerButton(false)}
+      >
         {/* Video Background */}
         <div className="absolute inset-0 w-full h-full">
           <video
@@ -191,6 +254,21 @@ export default function HomePage() {
           >
             Your browser does not support the video tag.
           </video>
+          
+          {/* Mute/Unmute Button for Hero Video */}
+          {showSpeakerButton && (
+            <button
+              onClick={() => setIsVideoMuted(!isVideoMuted)}
+              className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 transition-all duration-300 backdrop-blur-sm shadow-lg"
+              aria-label={isVideoMuted ? "Unmute video" : "Mute video"}
+            >
+              {isVideoMuted ? (
+                <VolumeX className="w-5 h-5" />
+              ) : (
+                <Volume2 className="w-5 h-5" />
+              )}
+            </button>
+          )}
           
           {/* Dark overlay for better text readability */}
           <div className="absolute inset-0 bg-black/40"></div>
@@ -215,23 +293,15 @@ export default function HomePage() {
                 <p className="text-xl text-white/90 max-w-md drop-shadow-lg">Networking that generates business</p>
             </div>
 
-            {/* Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Button */}
+              <div className="flex justify-start">
               <Button
-                className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                style={{ color: "#3755A5" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#54A3DA"
-                  e.currentTarget.style.color = "white"
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "white"
-                  e.currentTarget.style.color = "#3755A5"
-                }}
-              >
-                Register Now
-              </Button>
-              <Button
+                  onClick={() => {
+                    const formSection = document.getElementById('registration-form-section')
+                    if (formSection) {
+                      formSection.scrollIntoView({ behavior: 'smooth' })
+                    }
+                  }}
                 className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
                 style={{ color: "#3755A5" }}
                 onMouseEnter={(e) => {
@@ -280,46 +350,24 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right Content - Video Controls */}
+            {/* Right Content - Decorative Elements */}
             <div className="relative flex flex-col items-center space-y-6">
-              {/* Video Controls */}
-            <div 
-                className="relative"
-              onMouseEnter={() => setShowSpeakerButton(true)}
-              onMouseLeave={() => setShowSpeakerButton(false)}
-              >
-              {/* Unmute Button */}
-              {showSpeakerButton && (
-                <button
-                  onClick={() => setIsVideoMuted(!isVideoMuted)}
-                    className="bg-black/50 hover:bg-black/70 text-white rounded-full p-4 transition-all duration-300 backdrop-blur-sm shadow-lg"
-                  aria-label={isVideoMuted ? "Unmute video" : "Mute video"}
-                >
-                  {isVideoMuted ? (
-                      <VolumeX className="w-6 h-6" />
-                  ) : (
-                      <Volume2 className="w-6 h-6" />
-                  )}
-                </button>
-              )}
-            </div>
-
-            {/* Decorative Elements */}
-            <div
-              className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-xl"
+              {/* Decorative Elements */}
+              <div
+                className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-xl"
                 style={{ backgroundColor: "rgba(11, 88, 140, 0.3)" }}
-            ></div>
-            <div
-              className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full blur-xl"
+              ></div>
+              <div
+                className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full blur-xl"
                 style={{ backgroundColor: "rgba(25, 159, 212, 0.3)" }}
-            ></div>
+              ></div>
             </div>
           </div>
         </div>
       </main>
 
       {/* About Section */}
-      <section className="bg-white py-20">
+      <section id="about-section" className="bg-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-16">
@@ -327,7 +375,7 @@ export default function HomePage() {
               About Mahabiz 2026
             </h2>
             <div className="w-24 h-1 mx-auto rounded-full" style={{ backgroundColor: "#54A3DA" }}></div>
-          </div>
+                </div>
 
           {/* Main Content Grid */}
           <div className="grid lg:grid-cols-2 gap-16 items-start">
@@ -343,7 +391,7 @@ export default function HomePage() {
                 <p className="text-lg text-gray-700 leading-relaxed">
                   Started by <span className="font-semibold" style={{ color: "#3755A5" }}>GMBF Global</span>, Mahabiz has one simple goal: <span className="font-semibold" style={{ color: "#54A3DA" }}>turn handshakes into deals.</span>
                 </p>
-              </div>
+                </div>
 
               {/* What Makes Us Special */}
               <div className="bg-gray-50 p-8 rounded-2xl">
@@ -363,21 +411,21 @@ export default function HomePage() {
                     <div>
                       <span className="font-semibold" style={{ color: "#3755A5" }}>Real Results:</span>
                       <span className="text-gray-700"> Past events have created lasting partnerships and million-dollar deals</span>
-                    </div>
+                  </div>
                   </div>
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 rounded-full mt-3 flex-shrink-0" style={{ backgroundColor: "#54A3DA" }}></div>
                     <div>
                       <span className="font-semibold" style={{ color: "#3755A5" }}>Smart Focus:</span>
                       <span className="text-gray-700"> We connect the right people at the right time</span>
-                    </div>
+                </div>
                   </div>
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 rounded-full mt-3 flex-shrink-0" style={{ backgroundColor: "#54A3DA" }}></div>
                     <div>
                       <span className="font-semibold" style={{ color: "#3755A5" }}>Perfect Location:</span>
                       <span className="text-gray-700"> Dubai - the world's business crossroads</span>
-                    </div>
+                  </div>
                   </div>
                 </div>
               </div>
@@ -389,7 +437,7 @@ export default function HomePage() {
               <div className="bg-gradient-to-br p-8 rounded-2xl text-white" style={{ background: `linear-gradient(135deg, #3755A5, #54A3DA)` }}>
                 <h3 className="text-2xl lg:text-3xl font-bold mb-4">
                   Mahabiz 2026: Our Biggest Event Yet
-                </h3>
+                  </h3>
                 <p className="text-lg mb-6 opacity-90">
                   This isn't just another conference. It's two days of pure business magic happening <span className="font-semibold">January 31 - February 1, 2026.</span>
                 </p>
@@ -413,7 +461,7 @@ export default function HomePage() {
                     <span>Learn about exports, imports, sustainability, and future trends</span>
                   </li>
                 </ul>
-              </div>
+                </div>
 
               {/* Why Dubai */}
               <div className="bg-white border-2 p-8 rounded-2xl" style={{ borderColor: "#3755A5" }}>
@@ -449,12 +497,25 @@ export default function HomePage() {
 
       {/* Video Section */}
       <section 
+        id="promo-video-section"
         className="relative min-h-screen flex items-center justify-center overflow-hidden"
-        onMouseEnter={() => setShowPlayButton(true)}
-        onMouseLeave={() => setShowPlayButton(false)}
+        onMouseEnter={() => {
+          setShowPlayButton(true)
+          setShowPromoSpeakerButton(true)
+        }}
+        onMouseLeave={() => {
+          setShowPlayButton(false)
+          setShowPromoSpeakerButton(false)
+        }}
       >
         {/* Video Background */}
-        <div className="absolute inset-0 w-full h-full">
+        <div 
+          className="absolute inset-0 w-full h-full transition-all duration-300 ease-out"
+          style={{
+            transform: `scale(${videoScale})`,
+            opacity: videoOpacity,
+          }}
+        >
           <video
             ref={(video) => {
               if (video) {
@@ -466,12 +527,27 @@ export default function HomePage() {
             src="/Final MAHABIZ PROMO 1 - GMBF (2).mp4"
             autoPlay
             loop
-            muted={isVideoMuted}
+            muted={isPromoVideoMuted}
             playsInline
             className="w-full h-full object-cover"
           >
             Your browser does not support the video tag.
           </video>
+          
+          {/* Mute/Unmute Button for Promo Video */}
+          {showPromoSpeakerButton && (
+            <button
+              onClick={() => setIsPromoVideoMuted(!isPromoVideoMuted)}
+              className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 transition-all duration-300 backdrop-blur-sm shadow-lg"
+              aria-label={isPromoVideoMuted ? "Unmute video" : "Mute video"}
+            >
+              {isPromoVideoMuted ? (
+                <VolumeX className="w-5 h-5" />
+              ) : (
+                <Volume2 className="w-5 h-5" />
+              )}
+            </button>
+          )}
           
           {/* Dark overlay for better content readability */}
           <div className="absolute inset-0 bg-black/40"></div>
@@ -500,7 +576,7 @@ export default function HomePage() {
 
 
       {/* FAQ Section */}
-      <section className="bg-white py-16">
+      <section id="faq-section" className="bg-white py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-12">
@@ -539,7 +615,7 @@ export default function HomePage() {
 
 
       {/* Registration Form Section */}
-      <section className="py-20 relative overflow-hidden" style={{ backgroundColor: "#3755A5" }}>
+      <section id="registration-form-section" className="py-20 relative overflow-hidden" style={{ backgroundColor: "#3755A5" }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Side - Register Your Interest */}
@@ -661,7 +737,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer Section */}
-      <footer className="bg-gray-50 py-16">
+      <footer id="footer-section" className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-4 gap-12">
             {/* Logo and Description */}
@@ -814,3 +890,4 @@ export default function HomePage() {
     </div>
   )
 }
+
