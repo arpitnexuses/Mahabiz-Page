@@ -750,7 +750,7 @@ export default function HomePage() {
             {/* Right Side - Event Details */}
             <div className={`space-y-8 ${visibleSections.has('about-section') ? 'animate-slide-in-right stagger-2' : 'opacity-0'}`}>
               {/* Mahabiz 2026 Event */}
-              <div className="bg-gradient-to-br p-8 rounded-2xl text-white min-h-[600px] flex flex-col justify-between" style={{ background: `linear-gradient(135deg, #3755A5, #54A3DA)` }}>
+              <div className="bg-gradient-to-br p-8 rounded-2xl text-white min-h-[540px] flex flex-col justify-between" style={{ background: `linear-gradient(135deg, #3755A5, #54A3DA)` }}>
                 <h3 className="text-2xl lg:text-3xl font-bold mb-4">
                   Mahabiz 2026: Our Biggest Event Yet
                   </h3>
