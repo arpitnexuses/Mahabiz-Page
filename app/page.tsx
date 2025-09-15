@@ -371,8 +371,19 @@ export default function HomePage() {
               >
                 FAQ's
               </a>
-              <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: "#3755A5" }}>
-                Blog
+              <a 
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  const formSection = document.getElementById('registration-form-section')
+                  if (formSection) {
+                    formSection.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }}
+                className="hover:opacity-80 transition-opacity" 
+                style={{ color: "#3755A5" }}
+              >
+                Registration Form
               </a>
               <a 
                 href="#"
@@ -493,12 +504,19 @@ export default function HomePage() {
                 FAQ's
               </a>
               <a 
-                href="#" 
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  const formSection = document.getElementById('registration-form-section')
+                  if (formSection) {
+                    formSection.scrollIntoView({ behavior: 'smooth' })
+                    setIsMobileMenuOpen(false)
+                  }
+                }}
                 className="hover:bg-gray-50 transition-colors py-3 px-3 rounded-lg text-lg font-medium" 
                 style={{ color: "#3755A5" }}
-                onClick={() => setIsMobileMenuOpen(false)}
               >
-                Blog
+                Registration Form
               </a>
               <a 
                 href="#"
