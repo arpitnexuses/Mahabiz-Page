@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { ChevronDown, ShoppingCart, User, Mic, Clock, Users, Calendar, Volume2, VolumeX, Play, Pause } from "lucide-react"
+import { ChevronDown, ShoppingCart, User, Mic, Clock, Users, Calendar, Volume2, VolumeX, Play, Pause, Menu, X } from "lucide-react"
 
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -48,12 +48,36 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 }
 
 export default function HomePage() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0,
   })
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element
+      if (isMobileMenuOpen && !target.closest('header')) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    if (isMobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      // Prevent body scroll when mobile menu is open
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.body.style.overflow = 'unset'
+    }
+  }, [isMobileMenuOpen])
   const [isVideoMuted, setIsVideoMuted] = useState(true)
   const [showSpeakerButton, setShowSpeakerButton] = useState(false)
   const [isVideoPlaying, setIsVideoPlaying] = useState(true)
@@ -135,8 +159,16 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
+      {/* Mobile Menu Backdrop */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
+      <header className="bg-white border-b border-gray-200 shadow-sm relative z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -148,7 +180,7 @@ export default function HomePage() {
               />
             </div>
 
-            {/* Navigation */}
+            {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
               <div
                 className="flex items-center space-x-1 cursor-pointer hover:opacity-80 transition-opacity"
@@ -204,8 +236,8 @@ export default function HomePage() {
               </a>
             </nav>
 
-            {/* Right side buttons */}
-            <div className="flex items-center space-x-4">
+            {/* Right side buttons - Desktop */}
+            <div className="hidden md:flex items-center space-x-4">
               <Button 
                 onClick={() => {
                   const formSection = document.getElementById('registration-form-section')
@@ -232,6 +264,112 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+
+            {/* Mobile menu button */}
+            <div className="md:hidden flex items-center space-x-2">
+              <Button 
+                onClick={() => {
+                  const formSection = document.getElementById('registration-form-section')
+                  if (formSection) {
+                    formSection.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }}
+                className="font-semibold px-4 py-2 text-sm transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                style={{ backgroundColor: "#3755A5", color: "white" }}
+              >
+                Register
+              </Button>
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 rounded-md hover:bg-gray-100 transition-colors"
+                aria-label="Toggle mobile menu"
+              >
+                {isMobileMenuOpen ? (
+                  <X className="w-6 h-6" style={{ color: "#3755A5" }} />
+                ) : (
+                  <Menu className="w-6 h-6" style={{ color: "#3755A5" }} />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Navigation Menu */}
+          <div className={`md:hidden transition-all duration-300 ease-in-out bg-white relative z-50 ${
+            isMobileMenuOpen 
+              ? 'max-h-96 opacity-100 pb-4' 
+              : 'max-h-0 opacity-0 overflow-hidden'
+          }`}>
+            <nav className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
+              <div
+                className="flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors py-3 px-3 rounded-lg"
+                style={{ color: "#3755A5" }}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span className="text-lg font-medium">Home</span>
+                <ChevronDown className="w-4 h-4" />
+              </div>
+              <a 
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  const aboutSection = document.getElementById('about-section')
+                  if (aboutSection) {
+                    aboutSection.scrollIntoView({ behavior: 'smooth' })
+                    setIsMobileMenuOpen(false)
+                  }
+                }}
+                className="hover:bg-gray-50 transition-colors py-3 px-3 rounded-lg text-lg font-medium" 
+                style={{ color: "#3755A5" }}
+              >
+                About Us
+              </a>
+              <a 
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  const faqSection = document.getElementById('faq-section')
+                  if (faqSection) {
+                    faqSection.scrollIntoView({ behavior: 'smooth' })
+                    setIsMobileMenuOpen(false)
+                  }
+                }}
+                className="hover:bg-gray-50 transition-colors py-3 px-3 rounded-lg text-lg font-medium" 
+                style={{ color: "#3755A5" }}
+              >
+                FAQ's
+              </a>
+              <a 
+                href="#" 
+                className="hover:bg-gray-50 transition-colors py-3 px-3 rounded-lg text-lg font-medium" 
+                style={{ color: "#3755A5" }}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Blog
+              </a>
+              <a 
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  const footerSection = document.getElementById('footer-section')
+                  if (footerSection) {
+                    footerSection.scrollIntoView({ behavior: 'smooth' })
+                    setIsMobileMenuOpen(false)
+                  }
+                }}
+                className="hover:bg-gray-50 transition-colors py-3 px-3 rounded-lg text-lg font-medium" 
+                style={{ color: "#3755A5" }}
+              >
+                Contact Us
+              </a>
+              <div className="pt-4 border-t border-gray-200 mt-4">
+                <div className="flex items-center space-x-3 py-3 px-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-lg">
+                    <User className="w-5 h-5 transition-colors duration-300" style={{ color: "#3755A5" }} />
+                  </div>
+                  <span className="text-gray-600 font-medium">Account</span>
+                </div>
+              </div>
+            </nav>
           </div>
         </div>
       </header>
@@ -375,7 +513,7 @@ export default function HomePage() {
               About Mahabiz 2026
             </h2>
             <div className="w-24 h-1 mx-auto rounded-full" style={{ backgroundColor: "#54A3DA" }}></div>
-                </div>
+          </div>
 
           {/* Main Content Grid */}
           <div className="grid lg:grid-cols-2 gap-16 items-start">
@@ -391,7 +529,7 @@ export default function HomePage() {
                 <p className="text-lg text-gray-700 leading-relaxed">
                   Started by <span className="font-semibold" style={{ color: "#3755A5" }}>GMBF Global</span>, Mahabiz has one simple goal: <span className="font-semibold" style={{ color: "#54A3DA" }}>turn handshakes into deals.</span>
                 </p>
-                </div>
+              </div>
 
               {/* What Makes Us Special */}
               <div className="bg-gray-50 p-8 rounded-2xl">
@@ -411,21 +549,21 @@ export default function HomePage() {
                     <div>
                       <span className="font-semibold" style={{ color: "#3755A5" }}>Real Results:</span>
                       <span className="text-gray-700"> Past events have created lasting partnerships and million-dollar deals</span>
-                  </div>
+                    </div>
                   </div>
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 rounded-full mt-3 flex-shrink-0" style={{ backgroundColor: "#54A3DA" }}></div>
                     <div>
                       <span className="font-semibold" style={{ color: "#3755A5" }}>Smart Focus:</span>
                       <span className="text-gray-700"> We connect the right people at the right time</span>
-                </div>
+                    </div>
                   </div>
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 rounded-full mt-3 flex-shrink-0" style={{ backgroundColor: "#54A3DA" }}></div>
                     <div>
                       <span className="font-semibold" style={{ color: "#3755A5" }}>Perfect Location:</span>
                       <span className="text-gray-700"> Dubai - the world's business crossroads</span>
-                  </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -461,17 +599,8 @@ export default function HomePage() {
                     <span>Learn about exports, imports, sustainability, and future trends</span>
                   </li>
                 </ul>
-                </div>
-
-              {/* Why Dubai */}
-              <div className="bg-white border-2 p-8 rounded-2xl" style={{ borderColor: "#3755A5" }}>
-                <h4 className="text-xl font-bold mb-4" style={{ color: "#3755A5" }}>
-                  Why Dubai? Why Now?
-                </h4>
-                <p className="text-gray-700 leading-relaxed">
-                  With India and UAE becoming stronger business partners than ever, there's never been a better time to connect these two dynamic markets. Dubai is the perfect meeting point where East meets West, and deals get done.
-                </p>
               </div>
+
 
             </div>
           </div>
@@ -613,6 +742,66 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Register Your Interest Section */}
+      <section className="py-20" style={{ backgroundColor: "#F8FAFC" }}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold mb-6" style={{ color: "#3755A5" }}>
+              Register Your Interest
+            </h2>
+            <p className="text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
+              Choose how you'd like to participate in Mahabiz 2026 and be part of this transformative business experience
+            </p>
+            <div className="w-24 h-1 mx-auto rounded-full mt-6" style={{ backgroundColor: "#54A3DA" }}></div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center max-w-4xl mx-auto">
+            {/* Participate As Delegate Button */}
+            <Button
+              onClick={() => {
+                const formSection = document.getElementById('registration-form-section')
+                if (formSection) {
+                  formSection.scrollIntoView({ behavior: 'smooth' })
+                }
+              }}
+              className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              style={{ color: "#3755A5" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#54A3DA"
+                e.currentTarget.style.color = "white"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "white"
+                e.currentTarget.style.color = "#3755A5"
+              }}
+            >
+              Participate As Delegate
+            </Button>
+
+            {/* Become Sponsor Button */}
+            <Button
+              onClick={() => {
+                const formSection = document.getElementById('registration-form-section')
+                if (formSection) {
+                  formSection.scrollIntoView({ behavior: 'smooth' })
+                }
+              }}
+              className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              style={{ color: "#3755A5" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#54A3DA"
+                e.currentTarget.style.color = "white"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "white"
+                e.currentTarget.style.color = "#3755A5"
+              }}
+            >
+              Become Sponsor
+            </Button>
+          </div>
+        </div>
+      </section>
 
       {/* Registration Form Section */}
       <section id="registration-form-section" className="py-20 relative overflow-hidden" style={{ backgroundColor: "#3755A5" }}>
