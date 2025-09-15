@@ -105,10 +105,12 @@ export default function HomePage() {
     return () => observer.disconnect()
   }, [])
 
-  const [isVideoMuted, setIsVideoMuted] = useState(true)
-  const [showSpeakerButton, setShowSpeakerButton] = useState(false)
+  const [isVideoMuted, setIsVideoMuted] = useState(false) // Hero video starts with sound
   const [isVideoPlaying, setIsVideoPlaying] = useState(true)
   const [showPlayButton, setShowPlayButton] = useState(false)
+  const [heroVideoRef, setHeroVideoRef] = useState<HTMLVideoElement | null>(null)
+  const [isHeroVideoPlaying, setIsHeroVideoPlaying] = useState(true)
+  const [showHeroPlayButton, setShowHeroPlayButton] = useState(false)
   const [promoVideoRef, setPromoVideoRef] = useState<HTMLVideoElement | null>(null)
   const [isPromoVideoMuted, setIsPromoVideoMuted] = useState(true)
   const [showPromoSpeakerButton, setShowPromoSpeakerButton] = useState(false)
@@ -198,6 +200,18 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  const handleHeroVideoPlayPause = () => {
+    if (heroVideoRef) {
+      if (isHeroVideoPlaying) {
+        heroVideoRef.pause()
+        setIsHeroVideoPlaying(false)
+      } else {
+        heroVideoRef.play()
+        setIsHeroVideoPlaying(true)
+      }
+    }
+  }
+
   const handleVideoPlayPause = () => {
     if (promoVideoRef) {
       if (isVideoPlaying) {
@@ -211,104 +225,7 @@ export default function HomePage() {
   }
 
   return (
-    <>
-      <style jsx global>{`
-        .animate-fade-in-up {
-          animation: fadeInUp 0.8s ease-out forwards;
-        }
-        
-        .animate-fade-in-left {
-          animation: fadeInLeft 0.8s ease-out forwards;
-        }
-        
-        .animate-fade-in-right {
-          animation: fadeInRight 0.8s ease-out forwards;
-        }
-        
-        .animate-scale-in {
-          animation: scaleIn 0.6s ease-out forwards;
-        }
-        
-        .animate-slide-in-left {
-          animation: slideInLeft 1s ease-out forwards;
-        }
-        
-        .animate-slide-in-right {
-          animation: slideInRight 1s ease-out forwards;
-        }
-        
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        @keyframes fadeInLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        
-        @keyframes fadeInRight {
-          from {
-            opacity: 0;
-            transform: translateX(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        
-        @keyframes slideInLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-50px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        
-        @keyframes slideInRight {
-          from {
-            opacity: 0;
-            transform: translateX(50px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        
-        @keyframes scaleIn {
-          from {
-            opacity: 0;
-            transform: scale(0.9);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-        
-        .stagger-1 { animation-delay: 0.1s; }
-        .stagger-2 { animation-delay: 0.2s; }
-        .stagger-3 { animation-delay: 0.3s; }
-        .stagger-4 { animation-delay: 0.4s; }
-      `}</style>
-      <div className="min-h-screen">
+    <div className="min-h-screen">
       {/* Mobile Menu Backdrop */}
       {isMobileMenuOpen && (
         <div 
@@ -551,13 +468,24 @@ export default function HomePage() {
         id="hero"
         ref={(el) => { sectionRefs.current['hero'] = el }}
         className={`relative min-h-screen flex items-center justify-center overflow-hidden ${getAnimationClasses('hero')}`}
-        onMouseEnter={() => setShowSpeakerButton(true)}
-        onMouseLeave={() => setShowSpeakerButton(false)}
+        onMouseEnter={() => {
+          setShowHeroPlayButton(true)
+        }}
+        onMouseLeave={() => {
+          setShowHeroPlayButton(false)
+        }}
       >
         {/* Video Background */}
         <div className="absolute inset-0 w-full h-full">
           <video
-            src="/MAHABIZ ( previous year event highlight )- GMBF .mp4"
+            ref={(video) => {
+              if (video) {
+                setHeroVideoRef(video)
+                video.addEventListener('play', () => setIsHeroVideoPlaying(true))
+                video.addEventListener('pause', () => setIsHeroVideoPlaying(false))
+              }
+            }}
+            src="/MAHABIZ%20(%20previous%20year%20event%20highlight%20)-%20GMBF%20.mp4"
             autoPlay
             loop
             muted={isVideoMuted}
@@ -567,17 +495,17 @@ export default function HomePage() {
             Your browser does not support the video tag.
           </video>
           
-          {/* Mute/Unmute Button for Hero Video */}
-          {showSpeakerButton && (
+          {/* Play/Pause Button for Hero Video - Centered */}
+          {showHeroPlayButton && (
             <button
-              onClick={() => setIsVideoMuted(!isVideoMuted)}
-              className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 transition-all duration-300 backdrop-blur-sm shadow-lg"
-              aria-label={isVideoMuted ? "Unmute video" : "Mute video"}
+              onClick={handleHeroVideoPlayPause}
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 bg-black/70 hover:bg-black/80 text-white rounded-full p-6 transition-all duration-300 backdrop-blur-sm shadow-2xl hover:scale-110"
+              aria-label={isHeroVideoPlaying ? "Pause video" : "Play video"}
             >
-              {isVideoMuted ? (
-                <VolumeX className="w-5 h-5" />
+              {isHeroVideoPlaying ? (
+                <Pause className="w-8 h-8" />
               ) : (
-                <Volume2 className="w-5 h-5" />
+                <Play className="w-8 h-8 ml-1" />
               )}
             </button>
           )}
@@ -589,93 +517,92 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
         </div>
 
-        {/* Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
-          <div className="space-y-8">
-            <div className="space-y-6">
-                <h1 className="text-6xl lg:text-7xl font-bold leading-tight text-white drop-shadow-2xl">
-                Mahabiz 2026 –
-                <br />
-                Contacts to
-                <br />
-                Contracts
-              </h1>
-                <p className="text-xl text-white/90 max-w-md drop-shadow-lg">Networking that generates business</p>
-            </div>
+         {/* Content */}
+         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+           {/* Left Content */}
+           <div className="space-y-8 mb-12">
+             <div className="space-y-6">
+                 <h1 className="text-6xl lg:text-7xl font-bold leading-tight text-white drop-shadow-2xl">
+                 Mahabiz 2026 –
+                 <br />
+                 Contacts to
+                 <br />
+                 Contracts
+               </h1>
+                 <p className="text-xl text-white/90 max-w-md drop-shadow-lg">Networking that generates business</p>
+             </div>
 
-              {/* Button */}
-              <div className="flex justify-start">
-              <Button
-                  onClick={() => {
-                    const formSection = document.getElementById('registration-form-section')
-                    if (formSection) {
-                      formSection.scrollIntoView({ behavior: 'smooth' })
-                    }
-                  }}
-                className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                style={{ color: "#3755A5" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#54A3DA"
-                  e.currentTarget.style.color = "white"
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "white"
-                  e.currentTarget.style.color = "#3755A5"
-                }}
-              >
-                Become Sponsor
-              </Button>
-            </div>
+               {/* Button */}
+               <div className="flex justify-start">
+               <Button
+                   onClick={() => {
+                     const formSection = document.getElementById('registration-form-section')
+                     if (formSection) {
+                       formSection.scrollIntoView({ behavior: 'smooth' })
+                     }
+                   }}
+                 className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                 style={{ color: "#3755A5" }}
+                 onMouseEnter={(e) => {
+                   e.currentTarget.style.backgroundColor = "#54A3DA"
+                   e.currentTarget.style.color = "white"
+                 }}
+                 onMouseLeave={(e) => {
+                   e.currentTarget.style.backgroundColor = "white"
+                   e.currentTarget.style.color = "#3755A5"
+                 }}
+               >
+                 Learn More
+               </Button>
+             </div>
+           </div>
 
-            {/* Countdown Timer */}
-            <div className="space-y-4">
-                <div className="flex items-center justify-center space-x-4 sm:space-x-6">
-                  <div className="text-center">
-                    <div className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">{timeLeft.days.toString().padStart(2, "0")}</div>
-                    <div className="text-white/70 text-xs sm:text-sm uppercase tracking-wider drop-shadow-md">Days</div>
-                  </div>
-                  <div className="text-2xl sm:text-3xl font-light text-white drop-shadow-lg">:</div>
-                  <div className="text-center">
-                    <div className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">{timeLeft.hours.toString().padStart(2, "0")}</div>
-                    <div className="text-white/70 text-xs sm:text-sm uppercase tracking-wider drop-shadow-md">Hours</div>
-                  </div>
-                  <div className="text-2xl sm:text-3xl font-light text-white drop-shadow-lg">:</div>
-                <div className="text-center">
-                    <div className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">{timeLeft.minutes.toString().padStart(2, "0")}</div>
-                    <div className="text-white/70 text-xs sm:text-sm uppercase tracking-wider drop-shadow-md">Minutes</div>
-                </div>
-                  <div className="text-2xl sm:text-3xl font-light text-white drop-shadow-lg">:</div>
-                <div className="text-center">
-                    <div className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">{timeLeft.seconds.toString().padStart(2, "0")}</div>
-                    <div className="text-white/70 text-xs sm:text-sm uppercase tracking-wider drop-shadow-md">Seconds</div>
-                  </div>
-                </div>
-                
-                {/* Event Date Display */}
-                <div className="text-center">
-                  <p className="text-white/80 text-sm sm:text-base drop-shadow-md">
-                    Event starts on <span className="font-semibold">January 31st, 2026 at 10:00 AM</span>
-                  </p>
-                </div>
-              </div>
-            </div>
+           {/* Countdown Timer - Centered */}
+           <div className="flex flex-col items-center justify-center w-full">
+             <div className="space-y-4">
+                 <div className="flex items-center justify-center space-x-6 sm:space-x-8">
+                   <div className="text-center">
+                     <div className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white drop-shadow-lg">{timeLeft.days.toString().padStart(2, "0")}</div>
+                     <div className="text-white/70 text-sm sm:text-base uppercase tracking-wider drop-shadow-md">Days</div>
+                   </div>
+                   <div className="text-3xl sm:text-4xl font-light text-white drop-shadow-lg">:</div>
+                   <div className="text-center">
+                     <div className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white drop-shadow-lg">{timeLeft.hours.toString().padStart(2, "0")}</div>
+                     <div className="text-white/70 text-sm sm:text-base uppercase tracking-wider drop-shadow-md">Hours</div>
+                   </div>
+                   <div className="text-3xl sm:text-4xl font-light text-white drop-shadow-lg">:</div>
+                   <div className="text-center">
+                     <div className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white drop-shadow-lg">{timeLeft.minutes.toString().padStart(2, "0")}</div>
+                     <div className="text-white/70 text-sm sm:text-base uppercase tracking-wider drop-shadow-md">Minutes</div>
+                   </div>
+                   <div className="text-3xl sm:text-4xl font-light text-white drop-shadow-lg">:</div>
+                   <div className="text-center">
+                     <div className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white drop-shadow-lg">{timeLeft.seconds.toString().padStart(2, "0")}</div>
+                     <div className="text-white/70 text-sm sm:text-base uppercase tracking-wider drop-shadow-md">Seconds</div>
+                   </div>
+                 </div>
+                 
+                 {/* Event Date Display */}
+                 <div className="text-center">
+                   <p className="text-white/80 text-sm sm:text-base drop-shadow-md">
+                     Event starts on <span className="font-semibold">January 31st, 2026 at 10:00 AM</span>
+                   </p>
+                 </div>
+               </div>
+             </div>
 
-            {/* Right Content - Decorative Elements */}
-            <div className="relative flex flex-col items-center space-y-6">
-              {/* Decorative Elements */}
-              <div
-                className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-xl"
-                style={{ backgroundColor: "rgba(11, 88, 140, 0.3)" }}
-              ></div>
-              <div
-                className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full blur-xl"
-                style={{ backgroundColor: "rgba(25, 159, 212, 0.3)" }}
-              ></div>
-            </div>
-          </div>
-        </div>
+             {/* Decorative Elements */}
+             <div className="relative flex flex-col items-center space-y-6 mt-12">
+               <div
+                 className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-xl"
+                 style={{ backgroundColor: "rgba(11, 88, 140, 0.3)" }}
+               ></div>
+               <div
+                 className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full blur-xl"
+                 style={{ backgroundColor: "rgba(25, 159, 212, 0.3)" }}
+               ></div>
+             </div>
+           </div>
       </main>
 
       {/* About Section */}
@@ -833,8 +760,22 @@ export default function HomePage() {
             ref={(video) => {
               if (video) {
                 setPromoVideoRef(video)
-                video.addEventListener('play', () => setIsVideoPlaying(true))
-                video.addEventListener('pause', () => setIsVideoPlaying(false))
+                video.addEventListener('play', () => {
+                  setIsVideoPlaying(true)
+                  // Mute hero video when promo video plays
+                  if (heroVideoRef) {
+                    heroVideoRef.muted = true
+                    setIsVideoMuted(true)
+                  }
+                })
+                video.addEventListener('pause', () => {
+                  setIsVideoPlaying(false)
+                  // Unmute hero video when promo video pauses
+                  if (heroVideoRef) {
+                    heroVideoRef.muted = false
+                    setIsVideoMuted(false)
+                  }
+                })
               }
             }}
             src="/Final MAHABIZ PROMO 1 - GMBF (2).mp4"
@@ -850,7 +791,14 @@ export default function HomePage() {
           {/* Mute/Unmute Button for Promo Video */}
           {showPromoSpeakerButton && (
             <button
-              onClick={() => setIsPromoVideoMuted(!isPromoVideoMuted)}
+              onClick={() => {
+                setIsPromoVideoMuted(!isPromoVideoMuted)
+                // Also control hero video mute state
+                if (heroVideoRef) {
+                  heroVideoRef.muted = !isPromoVideoMuted
+                  setIsVideoMuted(!isPromoVideoMuted)
+                }
+              }}
               className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 transition-all duration-300 backdrop-blur-sm shadow-lg"
               aria-label={isPromoVideoMuted ? "Unmute video" : "Mute video"}
             >
@@ -1306,8 +1254,7 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
-      </div>
-    </>
+    </div>
   )
 }
 
