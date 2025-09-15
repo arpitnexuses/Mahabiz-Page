@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { ChevronDown, ShoppingCart, User, Mic, Clock, Users, Calendar, Volume2, VolumeX, Play, Pause, Menu, X } from "lucide-react"
 
@@ -55,6 +55,8 @@ export default function HomePage() {
     minutes: 0,
     seconds: 0,
   })
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set())
+  const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({})
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -78,6 +80,31 @@ export default function HomePage() {
       document.body.style.overflow = 'unset'
     }
   }, [isMobileMenuOpen])
+
+  // Scroll animation effect
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleSections(prev => new Set(prev).add(entry.target.id))
+          }
+        })
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      }
+    )
+
+    // Observe all sections
+    Object.values(sectionRefs.current).forEach((ref) => {
+      if (ref) observer.observe(ref)
+    })
+
+    return () => observer.disconnect()
+  }, [])
+
   const [isVideoMuted, setIsVideoMuted] = useState(true)
   const [showSpeakerButton, setShowSpeakerButton] = useState(false)
   const [isVideoPlaying, setIsVideoPlaying] = useState(true)
@@ -87,6 +114,32 @@ export default function HomePage() {
   const [showPromoSpeakerButton, setShowPromoSpeakerButton] = useState(false)
   const [videoScale, setVideoScale] = useState(1)
   const [videoOpacity, setVideoOpacity] = useState(1)
+
+  // Animation utility function
+  const getAnimationClasses = (sectionId: string, direction: 'left' | 'right' | 'up' = 'up') => {
+    const isVisible = visibleSections.has(sectionId)
+    const baseClasses = 'transition-all duration-1000 ease-out'
+    
+    if (direction === 'left') {
+      return `${baseClasses} ${
+        isVisible 
+          ? 'opacity-100 translate-x-0' 
+          : 'opacity-0 -translate-x-8'
+      }`
+    } else if (direction === 'right') {
+      return `${baseClasses} ${
+        isVisible 
+          ? 'opacity-100 translate-x-0' 
+          : 'opacity-0 translate-x-8'
+      }`
+    } else {
+      return `${baseClasses} ${
+        isVisible 
+          ? 'opacity-100 translate-y-0' 
+          : 'opacity-0 translate-y-8'
+      }`
+    }
+  }
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -158,7 +211,104 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <>
+      <style jsx global>{`
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s ease-out forwards;
+        }
+        
+        .animate-fade-in-left {
+          animation: fadeInLeft 0.8s ease-out forwards;
+        }
+        
+        .animate-fade-in-right {
+          animation: fadeInRight 0.8s ease-out forwards;
+        }
+        
+        .animate-scale-in {
+          animation: scaleIn 0.6s ease-out forwards;
+        }
+        
+        .animate-slide-in-left {
+          animation: slideInLeft 1s ease-out forwards;
+        }
+        
+        .animate-slide-in-right {
+          animation: slideInRight 1s ease-out forwards;
+        }
+        
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes fadeInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes fadeInRight {
+          from {
+            opacity: 0;
+            transform: translateX(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes slideInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-50px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(50px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+      `}</style>
+      <div className="min-h-screen">
       {/* Mobile Menu Backdrop */}
       {isMobileMenuOpen && (
         <div 
@@ -168,7 +318,11 @@ export default function HomePage() {
       )}
 
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm relative z-50">
+      <header 
+        id="header"
+        ref={(el) => { sectionRefs.current['header'] = el }}
+        className={`bg-white border-b border-gray-200 shadow-sm relative z-50 ${getAnimationClasses('header')}`}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -376,7 +530,9 @@ export default function HomePage() {
 
       {/* Hero Section with Video Background */}
       <main 
-        className="relative min-h-screen flex items-center justify-center overflow-hidden"
+        id="hero"
+        ref={(el) => { sectionRefs.current['hero'] = el }}
+        className={`relative min-h-screen flex items-center justify-center overflow-hidden ${getAnimationClasses('hero')}`}
         onMouseEnter={() => setShowSpeakerButton(true)}
         onMouseLeave={() => setShowSpeakerButton(false)}
       >
@@ -505,10 +661,14 @@ export default function HomePage() {
       </main>
 
       {/* About Section */}
-      <section id="about-section" className="bg-white py-20">
+      <section 
+        id="about-section" 
+        ref={(el) => { sectionRefs.current['about-section'] = el }}
+        className={`bg-white py-20 ${getAnimationClasses('about-section', 'up')}`}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="text-center mb-16">
+          <div className={`text-center mb-16 ${visibleSections.has('about-section') ? 'animate-fade-in-up' : 'opacity-0'}`}>
             <h2 className="text-4xl lg:text-6xl font-bold mb-6" style={{ color: "#3755A5" }}>
               About Mahabiz 2026
             </h2>
@@ -518,7 +678,7 @@ export default function HomePage() {
           {/* Main Content Grid */}
           <div className="grid lg:grid-cols-2 gap-16 items-start">
             {/* Left Side - Story */}
-            <div className="space-y-8">
+            <div className={`space-y-8 ${visibleSections.has('about-section') ? 'animate-slide-in-left stagger-1' : 'opacity-0'}`}>
               <div>
                 <h3 className="text-2xl lg:text-3xl font-bold mb-4" style={{ color: "#3755A5" }}>
                   The Story Behind Mahabiz
@@ -570,9 +730,9 @@ export default function HomePage() {
             </div>
 
             {/* Right Side - Event Details */}
-            <div className="space-y-8">
+            <div className={`space-y-8 ${visibleSections.has('about-section') ? 'animate-slide-in-right stagger-2' : 'opacity-0'}`}>
               {/* Mahabiz 2026 Event */}
-              <div className="bg-gradient-to-br p-8 rounded-2xl text-white" style={{ background: `linear-gradient(135deg, #3755A5, #54A3DA)` }}>
+              <div className="bg-gradient-to-br p-8 rounded-2xl text-white min-h-[600px] flex flex-col justify-between" style={{ background: `linear-gradient(135deg, #3755A5, #54A3DA)` }}>
                 <h3 className="text-2xl lg:text-3xl font-bold mb-4">
                   Mahabiz 2026: Our Biggest Event Yet
                   </h3>
@@ -608,7 +768,12 @@ export default function HomePage() {
       </section>
 
       {/* Our Promise Section - Centered */}
-      <section className="py-20" style={{ backgroundColor: "#F8FAFC" }}>
+      <section 
+        id="our-promise"
+        ref={(el) => { sectionRefs.current['our-promise'] = el }}
+        className={`py-20 ${getAnimationClasses('our-promise')}`} 
+        style={{ backgroundColor: "#F8FAFC" }}
+      >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h3 className="text-4xl lg:text-5xl font-bold mb-8" style={{ color: "#3755A5" }}>
@@ -627,7 +792,8 @@ export default function HomePage() {
       {/* Video Section */}
       <section 
         id="promo-video-section"
-        className="relative min-h-screen flex items-center justify-center overflow-hidden"
+        ref={(el) => { sectionRefs.current['promo-video-section'] = el }}
+        className={`relative min-h-screen flex items-center justify-center overflow-hidden ${getAnimationClasses('promo-video-section')}`}
         onMouseEnter={() => {
           setShowPlayButton(true)
           setShowPromoSpeakerButton(true)
@@ -705,7 +871,11 @@ export default function HomePage() {
 
 
       {/* FAQ Section */}
-      <section id="faq-section" className="bg-white py-16">
+      <section 
+        id="faq-section" 
+        ref={(el) => { sectionRefs.current['faq-section'] = el }}
+        className={`bg-white py-16 ${getAnimationClasses('faq-section', 'up')}`}
+      >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-12">
@@ -718,32 +888,47 @@ export default function HomePage() {
 
           {/* FAQ Items */}
           <div className="space-y-4">
-            <FAQItem
-              question="What are the sponsorship benefits?"
-              answer="Gain visibility among 800+ global entrepreneurs, prominent industry leaders, and policymakers. Enjoy logo placement, speaking opportunities, and exclusive networking access to build your brand internationally."
-            />
-            <FAQItem
-              question="How can I register for Mahabiz 2026?"
-              answer="You can register easily via the online form on our website. Choose individual passes or group packages, and complete payment securely online."
-            />
-            <FAQItem
-              question=" Who can participate in the event?"
-              answer="Mahabiz is open to entrepreneurs, startups, investors, government officials, and trade professionals interested in global business collaboration."
-            />
-            <FAQItem
-              question=" Is accommodation provided for attendees?"
-              answer="While accommodation isn’t included, we partner with premium hotels near the venue offering special rates to participants. Details are shared after registration."
-            />
-            <FAQItem
-              question="What are the key highlights of the event?"
-              answer="Experience interactive panel discussions, targeted networking dinners, business lounges, and workshops focused on exports, investments, sustainability, and more."
-            />
+            <div className={`${visibleSections.has('faq-section') ? 'animate-slide-in-left stagger-1' : 'opacity-0'}`}>
+              <FAQItem
+                question="What are the sponsorship benefits?"
+                answer="Gain visibility among 800+ global entrepreneurs, prominent industry leaders, and policymakers. Enjoy logo placement, speaking opportunities, and exclusive networking access to build your brand internationally."
+              />
+            </div>
+            <div className={`${visibleSections.has('faq-section') ? 'animate-slide-in-right stagger-2' : 'opacity-0'}`}>
+              <FAQItem
+                question="How can I register for Mahabiz 2026?"
+                answer="You can register easily via the online form on our website. Choose individual passes or group packages, and complete payment securely online."
+              />
+            </div>
+            <div className={`${visibleSections.has('faq-section') ? 'animate-slide-in-left stagger-3' : 'opacity-0'}`}>
+              <FAQItem
+                question=" Who can participate in the event?"
+                answer="Mahabiz is open to entrepreneurs, startups, investors, government officials, and trade professionals interested in global business collaboration."
+              />
+            </div>
+            <div className={`${visibleSections.has('faq-section') ? 'animate-slide-in-right stagger-4' : 'opacity-0'}`}>
+              <FAQItem
+                question=" Is accommodation provided for attendees?"
+                answer="While accommodation isn't included, we partner with premium hotels near the venue offering special rates to participants. Details are shared after registration."
+              />
+            </div>
+            <div className={`${visibleSections.has('faq-section') ? 'animate-slide-in-left stagger-1' : 'opacity-0'}`}>
+              <FAQItem
+                question="What are the key highlights of the event?"
+                answer="Experience interactive panel discussions, targeted networking dinners, business lounges, and workshops focused on exports, investments, sustainability, and more."
+              />
+            </div>
           </div>
         </div>
       </section>
 
       {/* Register Your Interest Section */}
-      <section className="py-20" style={{ backgroundColor: "#F8FAFC" }}>
+      <section 
+        id="register-interest"
+        ref={(el) => { sectionRefs.current['register-interest'] = el }}
+        className={`py-20 ${getAnimationClasses('register-interest', 'up')}`} 
+        style={{ backgroundColor: "#F8FAFC" }}
+      >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold mb-6" style={{ color: "#3755A5" }}>
@@ -757,14 +942,15 @@ export default function HomePage() {
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center max-w-4xl mx-auto">
             {/* Participate As Delegate Button */}
-            <Button
+            <div className={`${visibleSections.has('register-interest') ? 'animate-slide-in-left stagger-1' : 'opacity-0'}`}>
+              <Button
               onClick={() => {
                 const formSection = document.getElementById('registration-form-section')
                 if (formSection) {
                   formSection.scrollIntoView({ behavior: 'smooth' })
                 }
               }}
-              className="font-semibold px-8 py-3 text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              className="font-semibold px-8 py-3 text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg w-64"
               style={{ backgroundColor: "#3755A5", color: "white" }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = "#54A3DA"
@@ -774,19 +960,21 @@ export default function HomePage() {
                 e.currentTarget.style.backgroundColor = "#3755A5"
                 e.currentTarget.style.color = "white"
               }}
-            >
-              Participate As Delegate
-            </Button>
+              >
+                Participate As Delegate
+              </Button>
+            </div>
 
             {/* Become Sponsor Button */}
-            <Button
+            <div className={`${visibleSections.has('register-interest') ? 'animate-slide-in-right stagger-2' : 'opacity-0'}`}>
+              <Button
               onClick={() => {
                 const formSection = document.getElementById('registration-form-section')
                 if (formSection) {
                   formSection.scrollIntoView({ behavior: 'smooth' })
                 }
               }}
-              className="font-semibold px-8 py-3 text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              className="font-semibold px-8 py-3 text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg w-64"
               style={{ backgroundColor: "#3755A5", color: "white" }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = "#54A3DA"
@@ -797,18 +985,24 @@ export default function HomePage() {
                 e.currentTarget.style.color = "white"
               }}
             >
-              Become Sponsor
-            </Button>
+                Become Sponsor
+              </Button>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Registration Form Section */}
-      <section id="registration-form-section" className="py-20 relative overflow-hidden" style={{ backgroundColor: "#3755A5" }}>
+      <section 
+        id="registration-form-section" 
+        ref={(el) => { sectionRefs.current['registration-form-section'] = el }}
+        className={`py-20 relative overflow-hidden ${getAnimationClasses('registration-form-section', 'up')}`} 
+        style={{ backgroundColor: "#3755A5" }}
+      >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Side - Register Your Interest */}
-            <div className="text-white">
+            <div className={`text-white ${visibleSections.has('registration-form-section') ? 'animate-slide-in-left stagger-1' : 'opacity-0'}`}>
               <h1 className="text-4xl lg:text-5xl font-bold mb-6">
                 Register Your Interest
               </h1>
@@ -818,7 +1012,7 @@ export default function HomePage() {
             </div>
 
             {/* Right Side - Registration Form */}
-            <div className="bg-white rounded-lg p-8 shadow-2xl">
+            <div className={`bg-white rounded-lg p-8 shadow-2xl ${visibleSections.has('registration-form-section') ? 'animate-slide-in-right stagger-2' : 'opacity-0'}`}>
               {/* Mahabiz Logo */}
               <div className="flex justify-end mb-6">
                 <div className="text-2xl font-bold" style={{ color: "#3755A5" }}>
@@ -926,11 +1120,15 @@ export default function HomePage() {
       </section>
 
       {/* Footer Section */}
-      <footer id="footer-section" className="bg-gray-50 py-16">
+      <footer 
+        id="footer-section" 
+        ref={(el) => { sectionRefs.current['footer-section'] = el }}
+        className={`bg-gray-50 py-16 ${getAnimationClasses('footer-section', 'up')}`}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-4 gap-12">
             {/* Logo and Description */}
-            <div className="lg:col-span-1">
+            <div className={`lg:col-span-1 ${visibleSections.has('footer-section') ? 'animate-slide-in-left stagger-1' : 'opacity-0'}`}>
               <div className="flex items-center space-x-2 mb-6">
                 <img 
                   src="/gmbf-logo.svg" 
@@ -974,7 +1172,7 @@ export default function HomePage() {
             </div>
 
             {/* Quick Links */}
-            <div>
+            <div className={`${visibleSections.has('footer-section') ? 'animate-slide-in-right stagger-2' : 'opacity-0'}`}>
               <h3 className="font-semibold text-lg mb-6" style={{ color: "#3755A5" }}>
                 Quick Links
               </h3>
@@ -1008,14 +1206,27 @@ export default function HomePage() {
             </div>
 
             {/* Utility Pages */}
-            <div>
+            <div className={`${visibleSections.has('footer-section') ? 'animate-slide-in-left stagger-3' : 'opacity-0'}`}>
               <h3 className="font-semibold text-lg mb-6" style={{ color: "#3755A5" }}>
                 Utility Pages
               </h3>
               <ul className="space-y-4">
                 <li>
-                  <a href="#" className="text-gray-600 hover:opacity-70 transition-opacity">
-                  Download Brochure
+                  <a 
+                    href="#" 
+                    onClick={(e) => {
+                      e.preventDefault()
+                      // Create a temporary link element to trigger download
+                      const link = document.createElement('a')
+                      link.href = '/brochure.pdf'
+                      link.download = 'Mahabiz-2026-Brochure.pdf'
+                      document.body.appendChild(link)
+                      link.click()
+                      document.body.removeChild(link)
+                    }}
+                    className="text-gray-600 hover:opacity-70 transition-opacity cursor-pointer"
+                  >
+                    Download Brochure
                   </a>
                 </li>
                 <li>
@@ -1042,7 +1253,7 @@ export default function HomePage() {
             </div>
 
             {/* Newsletter Subscription */}
-            <div>
+            <div className={`${visibleSections.has('footer-section') ? 'animate-slide-in-right stagger-4' : 'opacity-0'}`}>
               <h3 className="font-semibold text-lg mb-6" style={{ color: "#3755A5" }}>
                 Subscribe 
               </h3>
@@ -1065,32 +1276,6 @@ export default function HomePage() {
                 </Button>
               </div>
 
-              {/* Download Brochure Button */}
-              <div className="mt-6">
-                <Button
-                  onClick={() => {
-                    // Create a temporary link element to trigger download
-                    const link = document.createElement('a')
-                    link.href = '/brochure.pdf'
-                    link.download = 'Mahabiz-2026-Brochure.pdf'
-                    document.body.appendChild(link)
-                    link.click()
-                    document.body.removeChild(link)
-                  }}
-                  className="font-semibold px-6 transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                  style={{ backgroundColor: "#3755A5", color: "white" }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#54A3DA"
-                    e.currentTarget.style.color = "white"
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#3755A5"
-                    e.currentTarget.style.color = "white"
-                  }}
-                >
-                  Download Brochure
-                </Button>
-              </div>
             </div>
           </div>
 
@@ -1103,7 +1288,8 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </>
   )
 }
 
