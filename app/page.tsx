@@ -105,15 +105,14 @@ export default function HomePage() {
     return () => observer.disconnect()
   }, [])
 
-  const [isVideoMuted, setIsVideoMuted] = useState(false) // Hero video starts with sound
+  const [isHeroVideoMuted, setIsHeroVideoMuted] = useState(false) // Hero video starts with sound
   const [isVideoPlaying, setIsVideoPlaying] = useState(true)
   const [showPlayButton, setShowPlayButton] = useState(false)
   const [heroVideoRef, setHeroVideoRef] = useState<HTMLVideoElement | null>(null)
   const [isHeroVideoPlaying, setIsHeroVideoPlaying] = useState(true)
   const [showHeroPlayButton, setShowHeroPlayButton] = useState(false)
   const [promoVideoRef, setPromoVideoRef] = useState<HTMLVideoElement | null>(null)
-  const [isPromoVideoMuted, setIsPromoVideoMuted] = useState(true)
-  const [showPromoSpeakerButton, setShowPromoSpeakerButton] = useState(false)
+  const [isPromoVideoMuted, setIsPromoVideoMuted] = useState(true) // Promo video starts muted
   const [videoScale, setVideoScale] = useState(1)
   const [videoOpacity, setVideoOpacity] = useState(1)
 
@@ -174,16 +173,19 @@ export default function HomePage() {
     return () => clearInterval(timer)
   }, [])
 
-  // Scroll effect for video animation
+  // Scroll effect for video animation and hero video muting
   useEffect(() => {
     const handleScroll = () => {
       const videoSection = document.getElementById('promo-video-section')
-      if (!videoSection) return
+      const heroSection = document.getElementById('hero')
+      
+      if (!videoSection || !heroSection) return
 
       const rect = videoSection.getBoundingClientRect()
+      const heroRect = heroSection.getBoundingClientRect()
       const windowHeight = window.innerHeight
       
-      // Calculate scroll progress
+      // Calculate scroll progress for promo video animation
       const scrollProgress = Math.max(0, Math.min(1, (windowHeight - rect.top) / windowHeight))
       
       // Scale effect: shrink when scrolling up, extend when scrolling down
@@ -192,13 +194,45 @@ export default function HomePage() {
       
       setVideoScale(scale)
       setVideoOpacity(opacity)
+
+      // Hero video muting based on scroll position
+      // If hero section is not visible (scrolled past), mute the hero video
+      const isHeroVisible = heroRect.bottom > 0 && heroRect.top < windowHeight
+      const isPromoVisible = rect.bottom > 0 && rect.top < windowHeight
+      
+      if (heroVideoRef) {
+        if (!isHeroVisible) {
+          // Hero section is not visible, mute the video
+          heroVideoRef.muted = true
+          setIsHeroVideoMuted(true)
+        } else {
+          // Hero section is visible, unmute the video (unless promo video is playing and visible)
+          if (!isVideoPlaying || !isPromoVisible) {
+            heroVideoRef.muted = false
+            setIsHeroVideoMuted(false)
+          }
+        }
+      }
+
+      // Promo video muting based on visibility and play state
+      if (promoVideoRef) {
+        if (isPromoVisible && isVideoPlaying) {
+          // Promo video is visible and playing, ensure it has sound
+          promoVideoRef.muted = false
+          setIsPromoVideoMuted(false)
+        } else {
+          // Promo video is not visible or not playing, mute it
+          promoVideoRef.muted = true
+          setIsPromoVideoMuted(true)
+        }
+      }
     }
 
     window.addEventListener('scroll', handleScroll)
     handleScroll() // Initial call
 
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [heroVideoRef, isVideoPlaying])
 
   const handleHeroVideoPlayPause = () => {
     if (heroVideoRef) {
@@ -217,7 +251,13 @@ export default function HomePage() {
       if (isVideoPlaying) {
         promoVideoRef.pause()
         setIsVideoPlaying(false)
+        // Mute promo video when paused
+        promoVideoRef.muted = true
+        setIsPromoVideoMuted(true)
       } else {
+        // Unmute promo video when user explicitly plays it
+        promoVideoRef.muted = false
+        setIsPromoVideoMuted(false)
         promoVideoRef.play()
         setIsVideoPlaying(true)
       }
@@ -488,7 +528,7 @@ export default function HomePage() {
             src="/MAHABIZ%20(%20previous%20year%20event%20highlight%20)-%20GMBF%20.mp4"
             autoPlay
             loop
-            muted={isVideoMuted}
+            muted={isHeroVideoMuted}
             playsInline
             className="w-full h-full object-cover"
           >
@@ -741,11 +781,9 @@ export default function HomePage() {
         className={`relative min-h-screen flex items-center justify-center overflow-hidden ${getAnimationClasses('promo-video-section')}`}
         onMouseEnter={() => {
           setShowPlayButton(true)
-          setShowPromoSpeakerButton(true)
         }}
         onMouseLeave={() => {
           setShowPlayButton(false)
-          setShowPromoSpeakerButton(false)
         }}
       >
         {/* Video Background */}
@@ -765,15 +803,39 @@ export default function HomePage() {
                   // Mute hero video when promo video plays
                   if (heroVideoRef) {
                     heroVideoRef.muted = true
-                    setIsVideoMuted(true)
+                    setIsHeroVideoMuted(true)
+                  }
+                  // Only unmute promo video if it's visible and user is interacting with it
+                  const promoSection = document.getElementById('promo-video-section')
+                  if (promoSection) {
+                    const rect = promoSection.getBoundingClientRect()
+                    const windowHeight = window.innerHeight
+                    const isPromoVisible = rect.bottom > 0 && rect.top < windowHeight
+                    
+                    if (isPromoVisible) {
+                      video.muted = false
+                      setIsPromoVideoMuted(false)
+                    }
                   }
                 })
                 video.addEventListener('pause', () => {
                   setIsVideoPlaying(false)
-                  // Unmute hero video when promo video pauses
+                  // Mute promo video when paused
+                  video.muted = true
+                  setIsPromoVideoMuted(true)
+                  // Unmute hero video when promo video pauses (only if hero section is visible)
                   if (heroVideoRef) {
-                    heroVideoRef.muted = false
-                    setIsVideoMuted(false)
+                    const heroSection = document.getElementById('hero')
+                    if (heroSection) {
+                      const heroRect = heroSection.getBoundingClientRect()
+                      const windowHeight = window.innerHeight
+                      const isHeroVisible = heroRect.bottom > 0 && heroRect.top < windowHeight
+                      
+                      if (isHeroVisible) {
+                        heroVideoRef.muted = false
+                        setIsHeroVideoMuted(false)
+                      }
+                    }
                   }
                 })
               }
@@ -781,34 +843,13 @@ export default function HomePage() {
             src="/Final MAHABIZ PROMO 1 - GMBF (2).mp4"
             autoPlay
             loop
-            muted={isPromoVideoMuted}
+            muted={true}
             playsInline
             className="w-full h-full object-cover"
           >
             Your browser does not support the video tag.
           </video>
           
-          {/* Mute/Unmute Button for Promo Video */}
-          {showPromoSpeakerButton && (
-            <button
-              onClick={() => {
-                setIsPromoVideoMuted(!isPromoVideoMuted)
-                // Also control hero video mute state
-                if (heroVideoRef) {
-                  heroVideoRef.muted = !isPromoVideoMuted
-                  setIsVideoMuted(!isPromoVideoMuted)
-                }
-              }}
-              className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 transition-all duration-300 backdrop-blur-sm shadow-lg"
-              aria-label={isPromoVideoMuted ? "Unmute video" : "Mute video"}
-            >
-              {isPromoVideoMuted ? (
-                <VolumeX className="w-5 h-5" />
-              ) : (
-                <Volume2 className="w-5 h-5" />
-              )}
-            </button>
-          )}
           
           {/* Dark overlay for better content readability */}
           <div className="absolute inset-0 bg-black/40"></div>
