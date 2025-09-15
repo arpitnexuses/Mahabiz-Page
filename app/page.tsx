@@ -764,15 +764,15 @@ export default function HomePage() {
                   formSection.scrollIntoView({ behavior: 'smooth' })
                 }
               }}
-              className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
-              style={{ color: "#3755A5" }}
+              className="font-semibold px-8 py-3 text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              style={{ backgroundColor: "#3755A5", color: "white" }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = "#54A3DA"
                 e.currentTarget.style.color = "white"
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "white"
-                e.currentTarget.style.color = "#3755A5"
+                e.currentTarget.style.backgroundColor = "#3755A5"
+                e.currentTarget.style.color = "white"
               }}
             >
               Participate As Delegate
@@ -786,15 +786,15 @@ export default function HomePage() {
                   formSection.scrollIntoView({ behavior: 'smooth' })
                 }
               }}
-              className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
-              style={{ color: "#3755A5" }}
+              className="font-semibold px-8 py-3 text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              style={{ backgroundColor: "#3755A5", color: "white" }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = "#54A3DA"
                 e.currentTarget.style.color = "white"
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "white"
-                e.currentTarget.style.color = "#3755A5"
+                e.currentTarget.style.backgroundColor = "#3755A5"
+                e.currentTarget.style.color = "white"
               }}
             >
               Become Sponsor
@@ -1062,6 +1062,33 @@ export default function HomePage() {
                 >
                   <span>Subscribe Now</span>
                   <span>→</span>
+                </Button>
+              </div>
+
+              {/* Download Brochure Button */}
+              <div className="mt-6">
+                <Button
+                  onClick={() => {
+                    // Create a temporary link element to trigger download
+                    const link = document.createElement('a')
+                    link.href = '/brochure.pdf'
+                    link.download = 'Mahabiz-2026-Brochure.pdf'
+                    document.body.appendChild(link)
+                    link.click()
+                    document.body.removeChild(link)
+                  }}
+                  className="font-semibold px-6 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                  style={{ backgroundColor: "#3755A5", color: "white" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#54A3DA"
+                    e.currentTarget.style.color = "white"
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#3755A5"
+                    e.currentTarget.style.color = "white"
+                  }}
+                >
+                  Download Brochure
                 </Button>
               </div>
             </div>
