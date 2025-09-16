@@ -315,8 +315,8 @@ export default function HomePage() {
 
     // Add a small delay to ensure DOM is ready
     const timeoutId = setTimeout(() => {
-      window.addEventListener('scroll', handleScroll)
-      handleScroll() // Initial call
+    window.addEventListener('scroll', handleScroll)
+    handleScroll() // Initial call
     }, 100)
 
     return () => {
@@ -663,10 +663,10 @@ export default function HomePage() {
                 video.addEventListener('pause', () => setIsHeroVideoPlaying(false))
               }
             }}
-            src="/MAHABIZ%20(%20previous%20year%20event%20highlight%20)-%20GMBF%20.mp4"
+            src="/MAHABIZ ( previous year event highlight )- GMBF.mp4"
             autoPlay
             loop
-            muted={false}
+             muted={false}
             playsInline
             className="w-full h-full object-cover"
           >
@@ -700,18 +700,18 @@ export default function HomePage() {
            {/* Left Content */}
            <div className="space-y-8 mb-12">
              <div className="space-y-6">
-                 <h1 className="text-6xl lg:text-7xl font-bold leading-tight text-white drop-shadow-2xl">
+                 <h1 className="text-6xl lg:text-7xl font-bold leading-tight text-black drop-shadow-2xl">
                  <span className="text-black">MahaBiz</span> 2026 –
                  <br />
-                 <span className="text-5xl lg:text-6xl">Contacts to</span>
+                 <span className="text-4xl lg:text-5xl text-white">Contacts to</span>
                  <br />
-                 <span className="text-5xl lg:text-6xl">Contracts</span>
+                 <span className="text-4xl lg:text-5xl text-white">Contracts</span>
                </h1>
-                 <p className="text-xl text-white/90 max-w-md drop-shadow-lg">Networking that generates business</p>
+                 <p className="text-2xl lg:text-3xl text-white/90 max-w-md drop-shadow-lg">Networking that generates business</p>
              </div>
 
-               {/* Button */}
-               <div className="flex justify-start">
+               {/* Buttons */}
+               <div className="flex flex-col sm:flex-row gap-4 justify-start">
                <Button
                    onClick={() => {
                      const formSection = document.getElementById('registration-form-section')
@@ -730,7 +730,28 @@ export default function HomePage() {
                    e.currentTarget.style.color = "#3755A5"
                  }}
                >
-                 Learn More
+                 Partner As a Sponsor
+               </Button>
+               
+               <Button
+                   onClick={() => {
+                     const formSection = document.getElementById('registration-form-section')
+                     if (formSection) {
+                       formSection.scrollIntoView({ behavior: 'smooth' })
+                     }
+                   }}
+                 className="font-semibold px-8 py-3 text-lg bg-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                 style={{ color: "#3755A5" }}
+                 onMouseEnter={(e) => {
+                   e.currentTarget.style.backgroundColor = "#54A3DA"
+                   e.currentTarget.style.color = "white"
+                 }}
+                 onMouseLeave={(e) => {
+                   e.currentTarget.style.backgroundColor = "white"
+                   e.currentTarget.style.color = "#3755A5"
+                 }}
+               >
+                 Participate As Delegate
                </Button>
              </div>
            </div>
@@ -742,21 +763,21 @@ export default function HomePage() {
                    <div className="text-center">
                      <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white drop-shadow-lg">
                        {isClient ? timeLeft.days.toString().padStart(2, "0") : "00"}
-                     </div>
+                   </div>
                      <div className="text-white/70 text-xs sm:text-sm uppercase tracking-wider drop-shadow-md text-center">Days</div>
                    </div>
                    <div className="text-2xl sm:text-3xl font-light text-white drop-shadow-lg">:</div>
                    <div className="text-center">
                      <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white drop-shadow-lg">
                        {isClient ? timeLeft.hours.toString().padStart(2, "0") : "00"}
-                     </div>
+                   </div>
                      <div className="text-white/70 text-xs sm:text-sm uppercase tracking-wider drop-shadow-md text-center">Hours</div>
                    </div>
                    <div className="text-2xl sm:text-3xl font-light text-white drop-shadow-lg">:</div>
                    <div className="text-center">
                      <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white drop-shadow-lg">
                        {isClient ? timeLeft.minutes.toString().padStart(2, "0") : "00"}
-                     </div>
+                   </div>
                      <div className="text-white/70 text-xs sm:text-sm uppercase tracking-wider drop-shadow-md text-center">Minutes</div>
                    </div>
                    <div className="text-2xl sm:text-3xl font-light text-white drop-shadow-lg">:</div>
@@ -770,7 +791,7 @@ export default function HomePage() {
                  
                  {/* Event Date Display */}
                  <div className="text-center">
-                   <p className="text-white/80 text-xs sm:text-sm drop-shadow-md">
+                   <p className="text-white/80 text-sm sm:text-base lg:text-lg drop-shadow-md">
                      Event starts on <span className="font-semibold">January 31st, 2026 at 04:00 PM</span>
                    </p>
                  </div>
@@ -914,7 +935,7 @@ export default function HomePage() {
               We don't just host events. We create connections that change businesses and lives. When you leave Mahabiz 2026, you'll have new partners, fresh ideas, and real opportunities to grow.
             </p>
             <h4 className="text-2xl font-semibold" style={{ color: "#54A3DA" }}>
-              Ready to turn your next conversation into your next contract?
+              Ready to turn your contacts into your next contracts.
             </h4>
           </div>
         </div>
