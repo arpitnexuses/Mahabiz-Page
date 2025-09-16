@@ -1,8 +1,8 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect, useRef } from "react"
+import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
 import { ChevronDown, ShoppingCart, User, Mic, Clock, Users, Calendar, Volume2, VolumeX, Play, Pause, Menu, X } from "lucide-react"
 
@@ -49,6 +49,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 
 export default function HomePage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -57,6 +58,11 @@ export default function HomePage() {
   })
   const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set())
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({})
+
+  // Set client flag immediately
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -83,6 +89,9 @@ export default function HomePage() {
 
   // Scroll animation effect
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -106,15 +115,73 @@ export default function HomePage() {
   }, [])
 
   const [isHeroVideoMuted, setIsHeroVideoMuted] = useState(false) // Hero video starts with sound
-  const [isVideoPlaying, setIsVideoPlaying] = useState(true)
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false) // Promo video starts paused
   const [showPlayButton, setShowPlayButton] = useState(false)
+  const [isManuallyControlled, setIsManuallyControlled] = useState(false) // Track manual control
+  const [isHeroManuallyControlled, setIsHeroManuallyControlled] = useState(false) // Track hero manual control
+  const manualControlTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const heroManualControlTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [heroVideoRef, setHeroVideoRef] = useState<HTMLVideoElement | null>(null)
-  const [isHeroVideoPlaying, setIsHeroVideoPlaying] = useState(true)
+  const [isHeroVideoPlaying, setIsHeroVideoPlaying] = useState(true) // Hero video starts playing
   const [showHeroPlayButton, setShowHeroPlayButton] = useState(false)
   const [promoVideoRef, setPromoVideoRef] = useState<HTMLVideoElement | null>(null)
   const [isPromoVideoMuted, setIsPromoVideoMuted] = useState(true) // Promo video starts muted
-  const [videoScale, setVideoScale] = useState(1)
+  const [videoScale, setVideoScale] = useState(0.8) // Start with smaller scale to ensure full video visibility
   const [videoOpacity, setVideoOpacity] = useState(1)
+
+  // Ensure hero video plays automatically on page load
+  useEffect(() => {
+    if (heroVideoRef && isClient) {
+      // Small delay to ensure video is ready
+      const timer = setTimeout(() => {
+        heroVideoRef.play().catch(console.error)
+        heroVideoRef.muted = false
+        setIsHeroVideoPlaying(true)
+        setIsHeroVideoMuted(false)
+      }, 1000)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [heroVideoRef, isClient])
+
+  // Additional effect to ensure hero video plays when section is visible
+  useEffect(() => {
+    if (isClient && heroVideoRef) {
+      const checkHeroVisibility = () => {
+        const heroSection = document.getElementById('hero')
+        if (heroSection) {
+          const heroRect = heroSection.getBoundingClientRect()
+          const windowHeight = window.innerHeight
+          const isHeroVisible = heroRect.bottom > 0 && heroRect.top < windowHeight
+          
+          if (isHeroVisible && !isVideoPlaying && !isHeroManuallyControlled) {
+            heroVideoRef.play().catch(console.error)
+            heroVideoRef.muted = false
+            setIsHeroVideoPlaying(true)
+            setIsHeroVideoMuted(false)
+          }
+        }
+      }
+      
+      // Check immediately and on scroll
+      checkHeroVisibility()
+      window.addEventListener('scroll', checkHeroVisibility)
+      
+      return () => window.removeEventListener('scroll', checkHeroVisibility)
+    }
+  }, [isClient, heroVideoRef, isVideoPlaying])
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (manualControlTimeoutRef.current) {
+        clearTimeout(manualControlTimeoutRef.current)
+      }
+      if (heroManualControlTimeoutRef.current) {
+        clearTimeout(heroManualControlTimeoutRef.current)
+      }
+    }
+  }, [])
 
   // Animation utility function
   const getAnimationClasses = (sectionId: string, direction: 'left' | 'right' | 'up' = 'up') => {
@@ -143,6 +210,9 @@ export default function HomePage() {
   }
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return
+
     const calculateTimeLeft = () => {
       // Event date: January 31st, 2026 at 10:00 AM
       const eventDate = new Date('2026-01-31T10:00:00')
@@ -175,6 +245,9 @@ export default function HomePage() {
 
   // Scroll effect for video animation and hero video muting
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return
+
     const handleScroll = () => {
       const videoSection = document.getElementById('promo-video-section')
       const heroSection = document.getElementById('hero')
@@ -189,78 +262,136 @@ export default function HomePage() {
       const scrollProgress = Math.max(0, Math.min(1, (windowHeight - rect.top) / windowHeight))
       
       // Scale effect: shrink when scrolling up, extend when scrolling down
-      const scale = 0.7 + (scrollProgress * 0.3) // Scale from 0.7 to 1.0
+      const scale = 0.8 + (scrollProgress * 0.2) // Scale from 0.8 to 1.0 (less aggressive scaling)
       const opacity = 0.6 + (scrollProgress * 0.4) // Opacity from 0.6 to 1.0
       
       setVideoScale(scale)
       setVideoOpacity(opacity)
 
-      // Hero video muting based on scroll position
-      // If hero section is not visible (scrolled past), mute the hero video
+      // Hero video muting and auto-play based on scroll position
       const isHeroVisible = heroRect.bottom > 0 && heroRect.top < windowHeight
       const isPromoVisible = rect.bottom > 0 && rect.top < windowHeight
       
       if (heroVideoRef) {
         if (!isHeroVisible) {
-          // Hero section is not visible, mute the video
+          // Hero section is not visible, pause and mute the video
+          heroVideoRef.pause()
           heroVideoRef.muted = true
           setIsHeroVideoMuted(true)
-        } else {
-          // Hero section is visible, unmute the video (unless promo video is playing and visible)
+          setIsHeroVideoPlaying(false)
+          setIsHeroManuallyControlled(false) // Reset manual control when leaving section
+        } else if (!isHeroManuallyControlled) {
+          // Hero section is visible and not manually controlled, play and unmute the video (unless promo video is playing and visible)
           if (!isVideoPlaying || !isPromoVisible) {
+            heroVideoRef.play().catch(console.error)
             heroVideoRef.muted = false
             setIsHeroVideoMuted(false)
+            setIsHeroVideoPlaying(true)
           }
         }
       }
 
-      // Promo video muting based on visibility and play state
+      // Promo video muting and auto-play based on visibility
       if (promoVideoRef) {
-        if (isPromoVisible && isVideoPlaying) {
-          // Promo video is visible and playing, ensure it has sound
-          promoVideoRef.muted = false
-          setIsPromoVideoMuted(false)
-        } else {
-          // Promo video is not visible or not playing, mute it
+        if (isPromoVisible && !isManuallyControlled) {
+          // Promo video is visible and not manually controlled, play it
+          promoVideoRef.play().catch(console.error)
+          setIsVideoPlaying(true)
+          if (!isHeroVisible) {
+            // If hero is not visible, unmute promo video
+            promoVideoRef.muted = false
+            setIsPromoVideoMuted(false)
+          }
+        } else if (!isPromoVisible) {
+          // Promo video is not visible, pause and mute it
+          promoVideoRef.pause()
           promoVideoRef.muted = true
           setIsPromoVideoMuted(true)
+          setIsVideoPlaying(false)
+          setIsManuallyControlled(false) // Reset manual control when leaving section
         }
       }
     }
 
-    window.addEventListener('scroll', handleScroll)
-    handleScroll() // Initial call
+    // Add a small delay to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
+      window.addEventListener('scroll', handleScroll)
+      handleScroll() // Initial call
+    }, 100)
 
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [heroVideoRef, isVideoPlaying])
+    return () => {
+      clearTimeout(timeoutId)
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [heroVideoRef, isVideoPlaying, promoVideoRef])
 
   const handleHeroVideoPlayPause = () => {
     if (heroVideoRef) {
+      setIsHeroManuallyControlled(true) // Mark as manually controlled
+      
+      // Clear any existing timeout
+      if (heroManualControlTimeoutRef.current) {
+        clearTimeout(heroManualControlTimeoutRef.current)
+      }
+      
       if (isHeroVideoPlaying) {
+        // User wants to pause the video
         heroVideoRef.pause()
         setIsHeroVideoPlaying(false)
       } else {
-        heroVideoRef.play()
+        // User wants to play the video
+        heroVideoRef.play().catch(console.error)
         setIsHeroVideoPlaying(true)
+        // Ensure hero video is unmuted when manually played
+        heroVideoRef.muted = false
+        setIsHeroVideoMuted(false)
       }
+      
+      // Reset manual control after 10 seconds of inactivity
+      heroManualControlTimeoutRef.current = setTimeout(() => {
+        setIsHeroManuallyControlled(false)
+      }, 10000)
     }
   }
 
   const handleVideoPlayPause = () => {
     if (promoVideoRef) {
+      setIsManuallyControlled(true) // Mark as manually controlled
+      
+      // Clear any existing timeout
+      if (manualControlTimeoutRef.current) {
+        clearTimeout(manualControlTimeoutRef.current)
+      }
+      
       if (isVideoPlaying) {
+        // User wants to pause the video
         promoVideoRef.pause()
         setIsVideoPlaying(false)
         // Mute promo video when paused
         promoVideoRef.muted = true
         setIsPromoVideoMuted(true)
+        // Unmute hero video when promo is paused
+        if (heroVideoRef) {
+          heroVideoRef.muted = false
+          setIsHeroVideoMuted(false)
+        }
       } else {
-        // Unmute promo video when user explicitly plays it
+        // User wants to play the video
         promoVideoRef.muted = false
         setIsPromoVideoMuted(false)
-        promoVideoRef.play()
+        promoVideoRef.play().catch(console.error)
         setIsVideoPlaying(true)
+        // Mute hero video when promo plays
+        if (heroVideoRef) {
+          heroVideoRef.muted = true
+          setIsHeroVideoMuted(true)
+        }
       }
+      
+      // Reset manual control after 10 seconds of inactivity
+      manualControlTimeoutRef.current = setTimeout(() => {
+        setIsManuallyControlled(false)
+      }, 10000)
     }
   }
 
@@ -510,6 +641,13 @@ export default function HomePage() {
         className={`relative min-h-screen flex items-center justify-center overflow-hidden ${getAnimationClasses('hero')}`}
         onMouseEnter={() => {
           setShowHeroPlayButton(true)
+          // Auto-play hero video when hovering over hero section (only if not manually controlled)
+          if (heroVideoRef && !isVideoPlaying && !isHeroManuallyControlled) {
+            heroVideoRef.play().catch(console.error)
+            heroVideoRef.muted = false
+            setIsHeroVideoMuted(false)
+            setIsHeroVideoPlaying(true)
+          }
         }}
         onMouseLeave={() => {
           setShowHeroPlayButton(false)
@@ -528,7 +666,7 @@ export default function HomePage() {
             src="/MAHABIZ%20(%20previous%20year%20event%20highlight%20)-%20GMBF%20.mp4"
             autoPlay
             loop
-            muted={isHeroVideoMuted}
+            muted={false}
             playsInline
             className="w-full h-full object-cover"
           >
@@ -563,11 +701,11 @@ export default function HomePage() {
            <div className="space-y-8 mb-12">
              <div className="space-y-6">
                  <h1 className="text-6xl lg:text-7xl font-bold leading-tight text-white drop-shadow-2xl">
-                 Mahabiz 2026 –
+                 <span className="text-black">MahaBiz</span> 2026 –
                  <br />
-                 Contacts to
+                 <span className="text-5xl lg:text-6xl">Contacts to</span>
                  <br />
-                 Contracts
+                 <span className="text-5xl lg:text-6xl">Contracts</span>
                </h1>
                  <p className="text-xl text-white/90 max-w-md drop-shadow-lg">Networking that generates business</p>
              </div>
@@ -597,35 +735,43 @@ export default function HomePage() {
              </div>
            </div>
 
-           {/* Countdown Timer - Centered */}
-           <div className="flex flex-col items-center justify-center w-full">
+           {/* Countdown Timer - Right Bottom Corner */}
+           <div className="absolute bottom-8 right-8 z-20">
              <div className="space-y-4">
-                 <div className="flex items-center justify-center space-x-6 sm:space-x-8">
+                 <div className="flex items-center space-x-4 sm:space-x-6">
                    <div className="text-center">
-                     <div className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white drop-shadow-lg">{timeLeft.days.toString().padStart(2, "0")}</div>
-                     <div className="text-white/70 text-sm sm:text-base uppercase tracking-wider drop-shadow-md">Days</div>
+                     <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white drop-shadow-lg">
+                       {isClient ? timeLeft.days.toString().padStart(2, "0") : "00"}
+                     </div>
+                     <div className="text-white/70 text-xs sm:text-sm uppercase tracking-wider drop-shadow-md text-center">Days</div>
                    </div>
-                   <div className="text-3xl sm:text-4xl font-light text-white drop-shadow-lg">:</div>
+                   <div className="text-2xl sm:text-3xl font-light text-white drop-shadow-lg">:</div>
                    <div className="text-center">
-                     <div className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white drop-shadow-lg">{timeLeft.hours.toString().padStart(2, "0")}</div>
-                     <div className="text-white/70 text-sm sm:text-base uppercase tracking-wider drop-shadow-md">Hours</div>
+                     <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white drop-shadow-lg">
+                       {isClient ? timeLeft.hours.toString().padStart(2, "0") : "00"}
+                     </div>
+                     <div className="text-white/70 text-xs sm:text-sm uppercase tracking-wider drop-shadow-md text-center">Hours</div>
                    </div>
-                   <div className="text-3xl sm:text-4xl font-light text-white drop-shadow-lg">:</div>
+                   <div className="text-2xl sm:text-3xl font-light text-white drop-shadow-lg">:</div>
                    <div className="text-center">
-                     <div className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white drop-shadow-lg">{timeLeft.minutes.toString().padStart(2, "0")}</div>
-                     <div className="text-white/70 text-sm sm:text-base uppercase tracking-wider drop-shadow-md">Minutes</div>
+                     <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white drop-shadow-lg">
+                       {isClient ? timeLeft.minutes.toString().padStart(2, "0") : "00"}
+                     </div>
+                     <div className="text-white/70 text-xs sm:text-sm uppercase tracking-wider drop-shadow-md text-center">Minutes</div>
                    </div>
-                   <div className="text-3xl sm:text-4xl font-light text-white drop-shadow-lg">:</div>
+                   <div className="text-2xl sm:text-3xl font-light text-white drop-shadow-lg">:</div>
                    <div className="text-center">
-                     <div className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white drop-shadow-lg">{timeLeft.seconds.toString().padStart(2, "0")}</div>
-                     <div className="text-white/70 text-sm sm:text-base uppercase tracking-wider drop-shadow-md">Seconds</div>
+                     <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white drop-shadow-lg">
+                       {isClient ? timeLeft.seconds.toString().padStart(2, "0") : "00"}
+                     </div>
+                     <div className="text-white/70 text-xs sm:text-sm uppercase tracking-wider drop-shadow-md text-center">Seconds</div>
                    </div>
                  </div>
                  
                  {/* Event Date Display */}
                  <div className="text-center">
-                   <p className="text-white/80 text-sm sm:text-base drop-shadow-md">
-                     Event starts on <span className="font-semibold">January 31st, 2026 at 10:00 AM</span>
+                   <p className="text-white/80 text-xs sm:text-sm drop-shadow-md">
+                     Event starts on <span className="font-semibold">January 31st, 2026 at 04:00 PM</span>
                    </p>
                  </div>
                </div>
@@ -672,7 +818,7 @@ export default function HomePage() {
                   Think of Mahabiz as the ultimate business matchmaker. It's where entrepreneurs from India meet business leaders from the Gulf, and together they create amazing opportunities.
                 </p>
                 <p className="text-lg text-gray-700 leading-relaxed">
-                  Started by <span className="font-semibold" style={{ color: "#3755A5" }}>GMBF Global</span>, Mahabiz has one simple goal: <span className="font-semibold" style={{ color: "#54A3DA" }}>turn handshakes into deals.</span>
+                A Marquee Event by <span className="font-semibold" style={{ color: "#3755A5" }}>GMBF Global</span>, Mahabiz has one simple goal: <span className="font-semibold" style={{ color: "#54A3DA" }}>turn handshakes into deals.</span>
                 </p>
               </div>
 
@@ -781,6 +927,18 @@ export default function HomePage() {
         className={`relative min-h-screen flex items-center justify-center overflow-hidden ${getAnimationClasses('promo-video-section')}`}
         onMouseEnter={() => {
           setShowPlayButton(true)
+          // Auto-play promo video when hovering over promo section (only if not manually controlled)
+          if (promoVideoRef && !isManuallyControlled) {
+            promoVideoRef.play().catch(console.error)
+            promoVideoRef.muted = false
+            setIsPromoVideoMuted(false)
+            setIsVideoPlaying(true)
+            // Mute hero video when promo video plays
+            if (heroVideoRef) {
+              heroVideoRef.muted = true
+              setIsHeroVideoMuted(true)
+            }
+          }
         }}
         onMouseLeave={() => {
           setShowPlayButton(false)
@@ -788,7 +946,7 @@ export default function HomePage() {
       >
         {/* Video Background */}
         <div 
-          className="absolute inset-0 w-full h-full transition-all duration-300 ease-out"
+          className="absolute inset-0 w-full h-full transition-all duration-300 ease-out bg-black"
           style={{
             transform: `scale(${videoScale})`,
             opacity: videoOpacity,
@@ -845,7 +1003,7 @@ export default function HomePage() {
             loop
             muted={true}
             playsInline
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           >
             Your browser does not support the video tag.
           </video>
@@ -897,32 +1055,26 @@ export default function HomePage() {
           <div className="space-y-4">
             <div className={`${visibleSections.has('faq-section') ? 'animate-slide-in-left stagger-1' : 'opacity-0'}`}>
               <FAQItem
-                question="What are the sponsorship benefits?"
+                question="What are the highlights of MahaBiz 2026?"
                 answer="Gain visibility among 800+ global entrepreneurs, prominent industry leaders, and policymakers. Enjoy logo placement, speaking opportunities, and exclusive networking access to build your brand internationally."
               />
             </div>
             <div className={`${visibleSections.has('faq-section') ? 'animate-slide-in-right stagger-2' : 'opacity-0'}`}>
               <FAQItem
-                question="How can I register for Mahabiz 2026?"
-                answer="You can register easily via the online form on our website. Choose individual passes or group packages, and complete payment securely online."
+                question="Who can participate in the event?"
+                answer="Mahabiz is open to entrepreneurs, startups, investors, government officials, and trade professionals interested in global business collaboration."
               />
             </div>
             <div className={`${visibleSections.has('faq-section') ? 'animate-slide-in-left stagger-3' : 'opacity-0'}`}>
               <FAQItem
-                question=" Who can participate in the event?"
-                answer="Mahabiz is open to entrepreneurs, startups, investors, government officials, and trade professionals interested in global business collaboration."
+                question="How can I be a partner of MahaBiz 2026??"
+                answer="You can register easily via the online form on our website. Choose individual passes or group packages, and complete payment securely online."
               />
             </div>
             <div className={`${visibleSections.has('faq-section') ? 'animate-slide-in-right stagger-4' : 'opacity-0'}`}>
               <FAQItem
-                question=" Is accommodation provided for attendees?"
+                question="How can I register as a delegate for MahaBiz 2026?"
                 answer="While accommodation isn't included, we partner with premium hotels near the venue offering special rates to participants. Details are shared after registration."
-              />
-            </div>
-            <div className={`${visibleSections.has('faq-section') ? 'animate-slide-in-left stagger-1' : 'opacity-0'}`}>
-              <FAQItem
-                question="What are the key highlights of the event?"
-                answer="Experience interactive panel discussions, targeted networking dinners, business lounges, and workshops focused on exports, investments, sustainability, and more."
               />
             </div>
           </div>
@@ -992,7 +1144,7 @@ export default function HomePage() {
                 e.currentTarget.style.color = "white"
               }}
             >
-                Become Sponsor
+                Partner As a Sponsor
               </Button>
             </div>
           </div>
@@ -1215,7 +1367,7 @@ export default function HomePage() {
             {/* Utility Pages */}
             <div className={`${visibleSections.has('footer-section') ? 'animate-slide-in-left stagger-3' : 'opacity-0'}`}>
               <h3 className="font-semibold text-lg mb-6" style={{ color: "#3755A5" }}>
-                Utility Pages
+                Resource
               </h3>
               <ul className="space-y-4">
                 <li>
